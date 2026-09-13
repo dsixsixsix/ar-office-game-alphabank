@@ -1,0 +1,199 @@
+# =========================================================
+#  Secrets & credentials — NEVER commit
+# =========================================================
+.env
+.env.*
+!.env.example
+!.env.sample
+*.env
+.envrc
+.secrets
+secrets/
+secrets.*
+*.secret
+credentials.json
+*credentials*.json
+service-account*.json
+client_secret*.json
+google-services.json
+GoogleService-Info.plist
+firebase-debug.log
+.npmrc
+.pypirc
+.netrc
+.git-credentials
+.docker/config.json
+.aws/
+.azure/
+.gcloud/
+.kube/config
+kubeconfig*
+terraform.tfvars
+*.auto.tfvars
+.terraform/
+*.tfstate
+*.tfstate.*
+
+# Keys, certificates, keystores
+*.pem
+*.key
+*.p8
+*.p12
+*.pfx
+*.crt
+*.cer
+*.der
+*.csr
+*.jks
+*.keystore
+!debug.keystore
+*.mobileprovision
+*.provisionprofile
+id_rsa*
+id_ed25519*
+id_ecdsa*
+*.gpg
+*.asc
+*.age
+
+# Local DB dumps / data exports (may contain PII)
+*.sqlite
+*.sqlite3
+*.db
+*.dump
+*.sql.gz
+*.bak
+
+# =========================================================
+#  Logs, temp, caches
+# =========================================================
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+tmp/
+temp/
+*.tmp
+*.swp
+*.swo
+*~
+.cache/
+
+# =========================================================
+#  OS
+# =========================================================
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# =========================================================
+#  IDE / editors / AI tooling (local settings)
+# =========================================================
+.idea/
+*.iml
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.vs/
+*.sublime-workspace
+.fleet/
+.claude/settings.local.json
+.cursor/
+.aider*
+
+# =========================================================
+#  Node / Web (Vite, Next.js, WebXR)
+# =========================================================
+node_modules/
+dist/
+build/
+out/
+.next/
+.nuxt/
+.vite/
+.turbo/
+.vercel/
+.netlify/
+coverage/
+*.tsbuildinfo
+.eslintcache
+
+# =========================================================
+#  Python
+# =========================================================
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+.ipynb_checkpoints/
+
+# =========================================================
+#  Unity (AR Foundation)
+# =========================================================
+/[Ll]ibrary/
+/[Tt]emp/
+/[Oo]bj/
+/[Bb]uild/
+/[Bb]uilds/
+/[Ll]ogs/
+/[Uu]ser[Ss]ettings/
+/[Mm]emoryCaptures/
+/[Rr]ecordings/
+/Assets/Plugins/Editor/JetBrains*
+*.csproj
+*.unityproj
+*.sln
+*.suo
+*.user
+*.pidb
+*.booproj
+*.svd
+*.pdb
+*.mdb
+*.opendb
+*.VC.db
+*.apk
+*.aab
+*.unitypackage
+crashlytics-build.properties
+sysinfo.txt
+/[Aa]ssets/[Ss]treamingAssets/aa/*
+
+# =========================================================
+#  iOS / Xcode (ARKit)
+# =========================================================
+DerivedData/
+xcuserdata/
+*.xcuserstate
+*.xcscmblueprint
+*.ipa
+*.dSYM.zip
+*.dSYM
+Pods/
+.build/
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots/
+fastlane/test_output/
+
+# =========================================================
+#  Android / Gradle (ARCore)
+# =========================================================
+.gradle/
+local.properties
+captures/
+.externalNativeBuild/
+.cxx/
+*.hprof

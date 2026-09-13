@@ -1,0 +1,78 @@
+Personal Use License with Attribution (Non-Commercial)
+
+Copyright (c) 2026 Mikhail Krainev. All rights reserved.
+
+This license is based on the structure of the MIT License and the
+PolyForm Noncommercial License 1.0.0, modified to restrict commercial use.
+
+1. Definitions
+
+   "Software" means the source code, binaries, assets, documentation and any
+   other materials in this repository ("ar-office-game-alphabank"), including
+   the service built from them.
+
+   "Owner" means the copyright holder named above.
+
+   "Personal Use" means use by an individual for private, educational,
+   research, hobby or other non-commercial purposes that do not generate
+   revenue or commercial advantage, directly or indirectly.
+
+   "Commercial Use" means any use by or on behalf of a company, corporation,
+   partnership, government body or other legal entity, and any use by any
+   person intended for or directed toward commercial advantage or monetary
+   compensation, including but not limited to: selling, licensing, renting or
+   sublicensing the Software; offering it as a hosted or managed service;
+   integrating it into a commercial product or service; or using it in
+   internal business operations.
+
+2. Permission for Personal Use
+
+   Subject to the conditions below, permission is hereby granted, free of
+   charge, to any individual obtaining a copy of the Software to use, copy,
+   modify and distribute the Software solely for Personal Use.
+
+3. Attribution Requirement
+
+   Any copy, modification, distribution, publication or public demonstration
+   of the Software, in whole or in substantial part, must:
+
+   a) retain this license file and the copyright notice above; and
+   b) visibly credit the author as follows:
+      "Based on ar-office-game-alphabank by Mikhail Krainev
+       (https://github.com/dsixsixsix/ar-office-game-alphabank)"; and
+   c) clearly indicate if changes were made.
+
+4. Commercial Use Prohibited Without Consent
+
+   Commercial Use of the Software is prohibited unless the Owner has granted
+   prior written consent and has approved the right to use in a separate
+   written agreement. Such agreement may define its own terms, scope, duration
+   and fees. Consent is not implied by any action or inaction of the Owner.
+
+   Requests for commercial licensing should be made by contacting the Owner
+   through the repository page.
+
+5. Termination
+
+   Any use of the Software in violation of this license automatically
+   terminates all rights granted under it. If the violation is cured within
+   30 days after receiving notice from the Owner, the rights are reinstated,
+   unless the Owner has previously given notice of a violation by the same
+   party.
+
+6. No Other Rights
+
+   No rights are granted except those expressly stated in this license. No
+   trademark rights are granted, including rights to any names, logos or
+   brands referenced in the Software. All rights not expressly granted are
+   reserved by the Owner.
+
+7. Disclaimer of Warranty and Limitation of Liability
+
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+   DEALINGS IN THE SOFTWARE.
