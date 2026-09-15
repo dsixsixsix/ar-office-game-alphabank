@@ -1,0 +1,59 @@
+; Engine configuration file.
+
+config_version=5
+
+[application]
+
+config/name="Office Game"
+run/main_scene="res://scenes/intro/morning_intro.tscn"
+config/features=PackedStringArray("4.7", "GL Compatibility")
+config/icon="res://icon.svg"
+
+[autoload]
+
+PlatformServices="*res://platform/platform_services.gd"
+DeviceEmulator="*res://platform/emulator/device_emulator.gd"
+Backend="*res://scripts/services/backend.gd"
+Appearance="*res://scripts/services/appearance.gd"
+
+[debug]
+
+gdscript/warnings/untyped_declaration=1
+gdscript/warnings/inferred_declaration=0
+gdscript/warnings/unsafe_method_access=1
+gdscript/warnings/unsafe_property_access=1
+
+[display]
+
+window/size/viewport_width=360
+window/size/viewport_height=640
+window/size/window_width_override=450
+window/size/window_height_override=800
+window/stretch/mode="viewport"
+window/stretch/aspect="expand"
+window/stretch/scale_mode="integer"
+window/handheld/orientation=1
+
+[gui]
+
+theme/default_font_antialiasing=0
+theme/default_font_hinting=0
+theme/default_font_subpixel_positioning=0
+
+[input_devices]
+
+pointing/emulate_touch_from_mouse=true
+
+[internationalization]
+
+locale/translations=PackedStringArray("res://localization/strings.ru.translation", "res://localization/strings.en.translation")
+locale/test="ru"
+
+[rendering]
+
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"
+textures/canvas_textures/default_texture_filter=0
+2d/snap/snap_2d_transforms_to_pixel=true
+2d/snap/snap_2d_vertices_to_pixel=true
+environment/defaults/default_clear_color=Color(0.64, 0.6, 0.56, 1)

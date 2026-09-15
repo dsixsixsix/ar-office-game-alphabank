@@ -1,0 +1,250 @@
+extends Node
+## Dev check: walks through home, commute intro and office, driving the scenes directly and saving
+## screenshots. The mock backend save is restored afterwards.
+## Run (GUI): godot --path client res://tools/dev_tour.tscn -- --device=pixel_8 --out=<dir>
+
+const SAVE: String = "user://mock_backend.json"
+const BACKUP: String = "user://mock_backend.tour_backup.json"
+
+var _out: String = ""
+
+
+func _ready() -> void:
+	for argument: String in OS.get_cmdline_user_args():
+		if argument.begins_with("--out="):
+			_out = argument.trim_prefix("--out=")
+	_start.call_deferred()
+
+
+func _start() -> void:
+	# Survive scene changes: move to the root and leave an empty placeholder as the current scene.
+	var tree: SceneTree = get_tree()
+	get_parent().remove_child(self)
+	tree.root.add_child(self)
+	var placeholder: Node = Node.new()
+	tree.root.add_child(placeholder)
+	tree.current_scene = placeholder
+	if FileAccess.file_exists(SAVE):
+		DirAccess.copy_absolute(ProjectSettings.globalize_path(SAVE), ProjectSettings.globalize_path(BACKUP))
+	await _wait(0.5)
+	await _morning_tour()
+	await _home_tour()
+	await _commute_tour()
+	await _office_tour()
+	await _evening_tour()
+	if FileAccess.file_exists(BACKUP):
+		DirAccess.copy_absolute(ProjectSettings.globalize_path(BACKUP), ProjectSettings.globalize_path(SAVE))
+		DirAccess.remove_absolute(ProjectSettings.globalize_path(BACKUP))
+	tree.quit()
+
+
+func _morning_tour() -> void:
+	get_tree().change_scene_to_file("res://scenes/intro/morning_intro.tscn")
+	await _wait(2.6)
+	await _shot("m1_wake")
+	await _wait(8.2)
+	await _shot("m2_bath")
+
+
+func _home_tour() -> void:
+	get_tree().change_scene_to_file("res://scenes/home/home.tscn")
+	await _wait(2.5)
+	await _shot("h1_start")
+	var home: Node = get_tree().current_scene
+	var layout: HomeLayout = (home.get("_map") as WorldMap).layout
+	await _teleport(home, _find(layout, "wardrobe").stand_cell)
+	await _wait(1.2)
+	await _shot("h2_bedroom")
+	home.call("_use", _find(layout, "wardrobe"))
+	await _wait(1.5)
+	await _shot("h3_wardrobe")
+	var wardrobe: WardrobePanel = home.get("_wardrobe")
+	wardrobe.call("_select_slot", "hat")
+	await _wait(0.6)
+	await _shot("h4_wardrobe_hats")
+	var state: BackendModels.WardrobeState = wardrobe.get("_state")
+	var wanted: Array[String] = ["hat:cowboy", "back:angel_wings", "hand:balloon", "top:hawaiian"]
+	for item: BackendModels.WardrobeItem in state.items:
+		if wanted.has(item.slot + ":" + item.id):
+			wardrobe.call("_on_item_pressed", item)
+	wardrobe.call("_select_slot", "back")
+	await _wait(0.8)
+	await _shot("h5_wardrobe_back")
+	wardrobe.call("_save_and_close")
+	await _wait(1.2)
+	await _shot("h6_new_look")
+	await _teleport(home, _find(layout, "laptop").stand_cell)
+	home.call("_use", _find(layout, "laptop"))
+	await _wait(1.6)
+	await _shot("h7_laptop")
+	var dialogue: DialogueBox = home.get("_dialogue")
+	for i: int in 6:
+		if dialogue.is_open():
+			dialogue.call("_advance")
+			await _wait(0.4)
+	await _wait(0.8)
+	await _shot("h8_laptop_choice")
+	(home.get("_choice") as ChoicePrompt).emit_signal("_answered", false)
+	await _wait(0.5)
+	await _teleport(home, _find(layout, "keys").stand_cell)
+	home.call("_use", _find(layout, "keys"))
+	await _wait(1.5)
+	await _shot("h9_garage")
+	(home.get("_shop_panel") as ShopPanel).visible = false
+	await _teleport(home, _find(layout, "sink").stand_cell)
+	await _wait(1.0)
+	await _shot("h10_bathroom_remark")
+
+
+func _commute_tour() -> void:
+	get_tree().change_scene_to_file("res://scenes/intro/commute_intro.tscn")
+	await _wait(4.0)
+	await _shot("c1_parking_retry")
+	await _wait(5.0)
+	await _shot("c2_autobahn")
+	await _wait(4.4)
+	await _shot("c3_traffic")
+	await _wait(4.5)
+	await _shot("c4_arrival")
+	(Backend.get("_impl") as MockBackend).call("_credit", 6000, "dev_tour", "tour")
+	var result: BackendModels.PurchaseResult = await Backend.buy_car("audi_rs6")
+	if result.status == BackendModels.PurchaseResult.Status.GRANTED:
+		await Backend.select_car("audi_rs6")
+	get_tree().change_scene_to_file("res://scenes/intro/commute_intro.tscn")
+	await _wait(4.2)
+	await _shot("c5_rs6_parking")
+	await _wait(5.6)
+	await _shot("c6_rs6_autobahn")
+
+
+func _office_tour() -> void:
+	get_tree().change_scene_to_file("res://scenes/main.tscn")
+	await _wait(2.5)
+	await _shot("o1_start")
+	var office: Node = get_tree().current_scene
+	await _teleport(office, Vector2i(24, 23))
+	await _wait(1.0)
+	await _shot("o2_reception_pins")
+	await _drag_check(office)
+	for child: Node in (office.get("_entities") as Node).get_children():
+		var npc: Npc = child as Npc
+		if npc != null and npc.definition.id == "reception":
+			office.call("_approach", npc)
+	await _wait(3.0)
+	await _shot("o3_reception_talk")
+	var dialogue: DialogueBox = office.get("_dialogue")
+	for i: int in 8:
+		if dialogue.is_open():
+			dialogue.call("_advance")
+			await _wait(0.4)
+	await _wait(0.8)
+	office.call("_open_tasks")
+	await _wait(1.0)
+	await _shot("o4_tasks")
+	(office.get("_task_panel") as TaskPanel).close_panel()
+	for task: BackendModels.TaskInfo in office.get("_tasks"):
+		if task.id == "coffee":
+			await _teleport(office, task.spot)
+			office.call("_go_to_task", task)
+	await _wait(1.2)
+	await _shot("o5_minigame")
+	(office.get("_minigame_panel") as MinigamePanel).emit_signal("_resolved", MinigamePanel.Outcome.CANCELLED)
+	await _wait(0.5)
+	office.call("_open_shop")
+	await _wait(1.2)
+	await _shot("o6_shop")
+	(office.get("_shop_panel") as ShopPanel).visible = false
+	for task: BackendModels.TaskInfo in office.get("_tasks"):
+		if task.id == "brand_red":
+			await _teleport(office, task.spot)
+			office.call("_go_to_task", task)
+	await _wait(1.2)
+	await _shot("o7_hard_minigame")
+	(office.get("_minigame_panel") as MinigamePanel).emit_signal("_resolved", MinigamePanel.Outcome.CANCELLED)
+	await _wait(0.5)
+	office.call("_open_tasks")
+	await _wait(1.0)
+	await _shot("o8_tasks_difficulty")
+	(office.get("_task_panel") as TaskPanel).close_panel()
+	# Close every task on the mock server so the "Go home" button appears.
+	var mock: MockBackend = Backend.get("_impl")
+	for task: BackendModels.TaskInfo in office.get("_tasks"):
+		if task.skippable:
+			mock.skip_task(task.id)
+		else:
+			mock.complete_task(task.id, true, "tour-%s-%d" % [task.id, Time.get_ticks_usec()])
+	office.call("_refresh_tasks")
+	await _wait(1.0)
+	await _teleport(office, Vector2i(24, 23))
+	await _shot("o9_go_home_button")
+	office.call("_go_home")
+	await _wait(1.5)
+	await _shot("o10_walking_out")
+
+
+func _evening_tour() -> void:
+	await _wait(3.0)
+	await _shot("e1_leave_office")
+	await _wait(3.4)
+	await _shot("e2_night_city")
+	await _wait(4.4)
+	await _shot("e3_home_arrival")
+	await _wait(5.6)
+	await _shot("e4_sleep")
+	await _wait(3.0)
+	await _shot("e5_lights_out")
+
+
+## Holds a finger to the left of the player and keeps it there: the player should keep walking left.
+func _drag_check(scene: Node) -> void:
+	var viewport: Viewport = get_viewport()
+	var player: Player = scene.get("_player")
+	var start_x: float = player.global_position.x
+	var center: Vector2 = viewport.get_visible_rect().size / 2.0
+	var press: InputEventScreenTouch = InputEventScreenTouch.new()
+	press.pressed = true
+	press.position = center + Vector2(-20, 0)
+	viewport.push_input(press, true)
+	for i: int in 6:
+		var drag: InputEventScreenDrag = InputEventScreenDrag.new()
+		drag.position = center + Vector2(-20 - i * 20, 0)
+		drag.relative = Vector2(-20, 0)
+		viewport.push_input(drag, true)
+		await get_tree().process_frame
+	await _wait(1.5)
+	await _shot("o2b_drag")
+	var release: InputEventScreenTouch = InputEventScreenTouch.new()
+	release.pressed = false
+	release.position = center + Vector2(-120, 0)
+	viewport.push_input(release, true)
+	print("drag check: player moved %.0f px, still walking=%s" % [player.global_position.x - start_x, player.is_walking()])
+	await _wait(1.0)
+
+
+func _find(layout: HomeLayout, id: String) -> HomeLayout.Interactable:
+	for use: HomeLayout.Interactable in layout.interactables:
+		if use.id == id:
+			return use
+	return null
+
+
+func _teleport(scene: Node, cell: Vector2i) -> void:
+	var map: WorldMap = scene.get("_map")
+	var player: Player = scene.get("_player")
+	player.walk_path(PackedVector2Array())
+	player.global_position = map.cell_to_world(cell)
+	(scene.get("_camera") as GameCamera).snap_to_target()
+	await get_tree().process_frame
+
+
+func _wait(seconds: float) -> void:
+	await get_tree().create_timer(seconds).timeout
+
+
+func _shot(shot_name: String) -> void:
+	await get_tree().process_frame
+	await get_tree().process_frame
+	var image: Image = get_tree().root.get_texture().get_image()
+	image.resize(image.get_width() / 2, image.get_height() / 2, Image.INTERPOLATE_BILINEAR)
+	image.save_png("%s/t-%s.png" % [_out, shot_name])
+	print("shot ", shot_name)

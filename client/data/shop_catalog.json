@@ -1,0 +1,21 @@
+{
+	"_comment": "Mock server content: reward catalog. icon = column in assets/ui/shop_icons.png. Epic and legendary purchases need manual approval. Merch also unlocks matching wardrobe items (see wardrobe.json).",
+	"items": [
+		{"id": "sticker_pack", "name": "Стикерпак Альфа", "description": "Набор стикеров для ноутбука.", "rarity": "common", "price": 60, "icon": 3},
+		{"id": "mug", "name": "Кружка с логотипом", "description": "Для кофе, который ты сваришь команде.", "rarity": "common", "price": 120, "icon": 2},
+		{"id": "promo_coffee", "name": "Промокод на кофе", "description": "Бесплатный кофе в кофейне у офиса.", "rarity": "common", "price": 80, "icon": 6},
+		{"id": "tote", "name": "Шоппер", "description": "Хлопковая сумка с принтом.", "rarity": "common", "price": 150, "icon": 5},
+		{"id": "promo_taxi", "name": "Промокод на такси −20%", "description": "Чтобы добраться до офиса.", "rarity": "common", "price": 140, "icon": 9},
+		{"id": "cap", "name": "Кепка Альфа", "description": "Красная кепка. Открывает её и в гардеробе.", "rarity": "rare", "price": 220, "icon": 14},
+		{"id": "backpack", "name": "Рюкзак Альфа", "description": "Для ноутбука и печенек. Открывает его и в гардеробе.", "rarity": "rare", "price": 320, "icon": 15},
+		{"id": "tshirt", "name": "Футболка мерч", "description": "Белая футболка с красным знаком.", "rarity": "rare", "price": 300, "icon": 0},
+		{"id": "thermos", "name": "Термокружка", "description": "Держит тепло всю планёрку.", "rarity": "rare", "price": 260, "icon": 4},
+		{"id": "promo_food", "name": "Промокод на доставку еды", "description": "Обед за счёт коинов.", "rarity": "rare", "price": 250, "icon": 7},
+		{"id": "promo_cinema", "name": "Два билета в кино", "description": "На любой сеанс в выходные.", "rarity": "rare", "price": 350, "icon": 8},
+		{"id": "powerbank", "name": "Пауэрбанк", "description": "10 000 мА·ч фирменного заряда.", "rarity": "rare", "price": 380, "icon": 12},
+		{"id": "hoodie", "name": "Худи Альфа-Банк", "description": "Тёплое красное худи.", "rarity": "epic", "price": 700, "icon": 1},
+		{"id": "parking", "name": "Парковка на неделю", "description": "Место у входа на 5 рабочих дней.", "rarity": "epic", "price": 900, "icon": 13},
+		{"id": "day_off", "name": "1 выходной день", "description": "Дополнительный оплачиваемый выходной.", "rarity": "legendary", "price": 2500, "icon": 10},
+		{"id": "job_swap", "name": "День на любой должности", "description": "Поработай один день кем захочешь. Кроме директора.", "rarity": "legendary", "price": 3000, "icon": 11}
+	]
+}

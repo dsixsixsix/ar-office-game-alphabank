@@ -1,0 +1,62 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/home.gd" id="1_home"]
+[ext_resource type="PackedScene" path="res://scenes/world/world_map.tscn" id="2_map"]
+[ext_resource type="PackedScene" path="res://scenes/player/player.tscn" id="3_player"]
+[ext_resource type="Script" path="res://scripts/world/tap_marker.gd" id="4_marker"]
+[ext_resource type="Script" path="res://scripts/world/game_camera.gd" id="5_camera"]
+[ext_resource type="Script" path="res://scripts/ui/hud.gd" id="6_hud"]
+[ext_resource type="PackedScene" path="res://scenes/fx/crt_overlay.tscn" id="7_crt"]
+[ext_resource type="Script" path="res://scripts/npc/dialogue_box.gd" id="8_dialogue"]
+[ext_resource type="Script" path="res://scripts/ui/shop_panel.gd" id="9_shop"]
+[ext_resource type="Script" path="res://scripts/ui/wardrobe_panel.gd" id="10_wardrobe"]
+[ext_resource type="Script" path="res://scripts/ui/choice_prompt.gd" id="11_choice"]
+
+[node name="Home" type="Node2D"]
+script = ExtResource("1_home")
+
+[node name="WorldMap" parent="." instance=ExtResource("2_map")]
+
+[node name="PathLine" type="Line2D" parent="."]
+width = 1.0
+
+[node name="TapMarker" type="Node2D" parent="."]
+script = ExtResource("4_marker")
+
+[node name="Entities" type="Node2D" parent="."]
+y_sort_enabled = true
+
+[node name="Player" parent="Entities" instance=ExtResource("3_player")]
+
+[node name="GameCamera" type="Camera2D" parent="." node_paths=PackedStringArray("target")]
+script = ExtResource("5_camera")
+target = NodePath("../Entities/Player")
+
+[node name="Hud" type="CanvasLayer" parent="."]
+script = ExtResource("6_hud")
+
+[node name="ShopPanel" type="CanvasLayer" parent="."]
+script = ExtResource("9_shop")
+
+[node name="WardrobePanel" type="CanvasLayer" parent="."]
+script = ExtResource("10_wardrobe")
+
+[node name="DialogueBox" type="CanvasLayer" parent="."]
+script = ExtResource("8_dialogue")
+
+[node name="ChoicePrompt" type="CanvasLayer" parent="."]
+script = ExtResource("11_choice")
+
+[node name="Fade" type="CanvasLayer" parent="."]
+layer = 60
+
+[node name="Rect" type="ColorRect" parent="Fade"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0, 0, 0, 1)
+
+[node name="CrtOverlay" parent="." instance=ExtResource("7_crt")]

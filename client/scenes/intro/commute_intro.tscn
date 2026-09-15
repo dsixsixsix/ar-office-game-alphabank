@@ -1,0 +1,17 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/intro/intro.gd" id="1_intro"]
+[ext_resource type="PackedScene" path="res://scenes/fx/crt_overlay.tscn" id="2_crt"]
+
+[node name="CommuteIntro" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_intro")
+sequence = 1
+next_scene = "res://scenes/main.tscn"
+
+[node name="CrtOverlay" parent="." instance=ExtResource("2_crt")]

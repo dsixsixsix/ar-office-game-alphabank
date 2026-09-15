@@ -1,0 +1,16 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/world/world_map.gd" id="1_map"]
+
+[node name="WorldMap" type="Node2D"]
+script = ExtResource("1_map")
+
+[node name="FloorLayer" type="TileMapLayer" parent="."]
+
+[node name="ShadowLayer" type="TileMapLayer" parent="."]
+
+[node name="Decals" type="Node2D" parent="."]
+
+[node name="WallLayer" type="TileMapLayer" parent="."]
+
+[node name="WallDecor" type="Node2D" parent="."]

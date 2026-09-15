@@ -1,0 +1,130 @@
+keys,ru,en
+BRAND_NAME,АЛЬФА-БАНК,ALFA-BANK
+ROOM_CABINET,Кабинет руководителя,Director's office
+ROOM_OPEN_SPACE,Опенспейс,Open space
+ROOM_MEETING,Переговорная,Meeting room
+ROOM_CORRIDOR,Коридор,Corridor
+ROOM_KITCHEN,Кухня,Kitchen
+ROOM_RECEPTION,Ресепшн,Reception
+ROOM_LOUNGE,Зона отдыха,Lounge
+ROOM_DESIGN,Отдел дизайна,Design department
+HOME_ROOM_BEDROOM,Спальня,Bedroom
+HOME_ROOM_BATHROOM,Ванная,Bathroom
+HOME_ROOM_HALL,Прихожая,Hallway
+HOME_ROOM_LIVING,Гостиная,Living room
+HOME_ROOM_KITCHEN,Кухня,Kitchen
+HUD_TITLE,АЛЬФА ОФИС,ALFA OFFICE
+HUD_HINT,"Нажми на карту - иди. Красные метки - задания: нажми, и игра начнётся на месте","Tap the map to walk. Red markers are tasks: tap one to go and start it"
+HUD_HOME_TITLE,ДОМА,AT HOME
+HUD_HOME_HINT,"Гуляй по квартире. Шкаф - гардероб, ноутбук или дверь - поехать в офис","Walk around the flat. Wardrobe for outfits, laptop or door to go to the office"
+HUD_BLOCKED,Туда не пройти,Can't go there
+HUD_TASKS,ЗАДАНИЯ,TASKS
+HUD_SHOP,МАГАЗИН,SHOP
+HUD_GO_HOME,ОТПРАВИТЬСЯ ДОМОЙ,GO HOME
+HUD_ALL_DONE,Все задания закрыты! Можно домой,All tasks closed! Time to go home
+HUD_GO_HOME_REMARK,"Всё, на сегодня хватит!","That's it for today!"
+DIALOGUE_YOU,Ты,You
+CHOICE_GO_OFFICE,Поехать в офис,Go to the office
+CHOICE_STAY,Ещё побуду дома,Stay a bit longer
+HOME_DOOR_QUESTION,Выходим? Офис сам себя не посетит.,Heading out? The office won't visit itself.
+HOME_LAPTOP_QUESTION,Закрыть ноутбук и поехать в офис?,Close the laptop and go to the office?
+TASKS_TITLE,Задания на сегодня,Today's tasks
+TASKS_STREAK,Серия: %d дн. · множитель x%s,Streak: %d days · multiplier x%s
+TASK_START,Начать,Start
+TASK_GO,Идти,Go
+TASK_DONE,Готово,Done
+TASK_REWARD,+%d альфа-коинов,+%d alfa coins
+TASK_DIFFICULTY_HARD,Сложно,Hard
+TASK_DIFFICULTY_VERY_HARD,Очень сложно,Very hard
+TASK_BONUS,награда ×%s,reward ×%s
+TASK_SKIP,Пропустить,Skip
+TASK_SKIPPED,Пропущено,Skipped
+TASK_SKIP_QUESTION,Пропустить задание? Награды за него сегодня не будет.,Skip the task? There will be no reward for it today.
+TASK_SKIP_CONFIRM,Пропустить,Skip
+TASK_SKIP_CANCEL,Попробую ещё,Keep trying
+TASK_SKIP_DONE,Задание пропущено,Task skipped
+MG_COFFEE_HINT,"Держи, чтобы налить. Отпусти между красными линиями","Hold to pour, release between the red lines"
+MG_CUPS,Чашки: %d/%d,Cups: %d/%d
+MG_BUBBLE_HINT,Лопай все пупырки!,Pop all the bubbles!
+MG_TIME,Время: %d,Time: %d
+MG_SORT_HINT,"Красные - в левый лоток, белые - в правый","Red to the left tray, white to the right"
+MG_SORT_PROGRESS,Документы: %d/%d,Documents: %d/%d
+MG_MISTAKES,Ошибки: %d/%d,Mistakes: %d/%d
+MG_RED_HINT,Найди настоящий Альфа-красный #EF3124,Find the real Alfa red #EF3124
+MG_ROUND,Раунд %d/%d,Round %d/%d
+MG_CHECKIN_HINT,Поздоровайся и отметься,Say hi and check in
+MG_CHECKIN_BUTTON,Отметиться,Check in
+MG_DONE,ГОТОВО!,DONE!
+MG_FAIL,НЕ ВЫШЛО,FAILED
+MG_SUCCESS,+%d,+%d
+SHOP_TITLE,Магазин наград,Rewards shop
+SHOP_TAB_REWARDS,НАГРАДЫ,REWARDS
+SHOP_TAB_GARAGE,ГАРАЖ,GARAGE
+SHOP_REFRESH,Новый ассортимент через %s,New items in %s
+SHOP_BUY,Купить,Buy
+SHOP_BOUGHT,Куплено,Bought
+SHOP_GRANTED,Награда получена!,Reward granted!
+SHOP_VOUCHER,Твой промокод: %s,Your promo code: %s
+SHOP_PENDING,Заявка отправлена на подтверждение,Request sent for approval
+GARAGE_TITLE,Гараж,Garage
+GARAGE_SPEED,до %d км/ч,up to %d km/h
+GARAGE_BUY,Купить,Buy
+GARAGE_SELECT,Выбрать,Choose
+GARAGE_SELECTED,Во дворе,Parked outside
+GARAGE_BOUGHT,Теперь это твоя машина!,This car is yours now!
+GARAGE_CHOSEN,%s ждёт во дворе,%s is waiting outside
+WARDROBE_TITLE,Гардероб,Wardrobe
+WARDROBE_DONE,Готово,Done
+WARDROBE_RANDOM,Случайный образ,Random look
+WARDROBE_SAVED,Образ сохранён!,Look saved!
+WARDROBE_LOCK_SHOP,В магазине,In the shop
+WARDROBE_LOCK_STREAK,%d дн. подряд,%d days in a row
+WARDROBE_LOCKED_SHOP,Купи этот мерч в магазине - и он появится в шкафу,Buy this merch in the shop to unlock it here
+WARDROBE_LOCKED_STREAK,Приходи в офис %d дней подряд - и откроется,Come to the office %d days in a row to unlock it
+WARDROBE_SLOT_SKIN,Кожа,Skin
+WARDROBE_SLOT_HAIR,Волосы,Hair
+WARDROBE_SLOT_TOP,Верх,Top
+WARDROBE_SLOT_BOTTOM,Низ,Bottom
+WARDROBE_SLOT_SHOES,Обувь,Shoes
+WARDROBE_SLOT_HAT,Голова,Head
+WARDROBE_SLOT_FACE,Лицо,Face
+WARDROBE_SLOT_BACK,Спина,Back
+WARDROBE_SLOT_HAND,В руках,In hand
+RARITY_COMMON,ОБЫЧНЫЙ,COMMON
+RARITY_RARE,РЕДКИЙ,RARE
+RARITY_EPIC,ЭПИЧЕСКИЙ,EPIC
+RARITY_LEGENDARY,ЛЕГЕНДАРНЫЙ,LEGENDARY
+ERROR_NOT_ENOUGH_COINS,Не хватает альфа-коинов,Not enough alfa coins
+ERROR_ALREADY_PURCHASED,Уже куплено сегодня,Already bought today
+ERROR_OFFER_EXPIRED,Ассортимент обновился,The shop has refreshed
+ERROR_DUPLICATE_OPERATION,Операция уже обработана,Operation already processed
+ERROR_ALREADY_COMPLETED,Задание уже выполнено сегодня,Task already completed today
+ERROR_DAILY_CAP_REACHED,Дневной лимит коинов исчерпан,Daily coin limit reached
+ERROR_TASK_FAILED,Задание не выполнено,Task not completed
+ERROR_UNKNOWN_TASK,Задание не найдено,Task not found
+ERROR_TASK_SKIPPED,Задание пропущено сегодня,Task skipped today
+ERROR_TASK_NOT_SKIPPABLE,Это задание нельзя пропустить,This task can't be skipped
+ERROR_ITEM_LOCKED,Этот предмет ещё не открыт,This item is still locked
+ERROR_UNKNOWN_ITEM,Такого предмета нет,No such item
+ERROR_INVALID_COLOR,Неверный цвет,Invalid colour
+ERROR_UNKNOWN_CAR,Такой машины нет,No such car
+ERROR_ALREADY_OWNED,Уже в гараже,Already in the garage
+ERROR_CAR_NOT_OWNED,Сначала купи эту машину,Buy this car first
+INTRO_SKIP,Удерживай - пропустить,Hold to skip
+INTRO_WAKE,07:30. ПОДЪЁМ.,07:30. WAKE UP.
+INTRO_STREAK_DAYS,ДНЕЙ ПОДРЯД В ОФИСЕ,DAYS IN A ROW
+INTRO_MULTIPLIER,МНОЖИТЕЛЬ ОЧКОВ x%s,POINTS MULTIPLIER x%s
+INTRO_WELCOME,ПРИВЕТСТВЕННЫЙ БОНУС +%d,WELCOME BONUS +%d
+INTRO_TEETH,ЗУБЫ. ДВЕ МИНУТЫ. НУ ПОЧТИ.,TEETH. TWO MINUTES. ALMOST.
+INTRO_BREAKFAST,ЗАВТРАК.,BREAKFAST.
+INTRO_PARKING,%s ЖДЁТ ВО ДВОРЕ.,THE %s IS WAITING OUTSIDE.
+INTRO_ENGINE_RETRY,ЧИХ-ПЫХ...,COUGH-COUGH...
+INTRO_AUTOBAHN,ТРАССА. %d КМ/Ч. ЛИВЕНЬ.,MOTORWAY. %d KM/H. POURING RAIN.
+INTRO_AUTOBAHN_SLOW,ТРАССА. %d КМ/Ч. ВСЕ ОБГОНЯЮТ.,MOTORWAY. %d KM/H. EVERYONE OVERTAKES.
+INTRO_TRAFFIC,ГОРОД. ПРОБКА. ВСЕ ЕДУТ В ОФИС.,CITY. TRAFFIC JAM. EVERYONE IS HEADING TO THE OFFICE.
+INTRO_HONK,БИП!,HONK!
+INTRO_ARRIVE,АЛЬФА-БАНК. ВХОД.,ALFA-BANK. ENTRANCE.
+INTRO_LEAVE_OFFICE,РАБОЧИЙ ДЕНЬ ОКОНЧЕН.,THE WORKDAY IS OVER.
+INTRO_NIGHT_DRIVE,ВЕЧЕР. ДОМОЙ ПО ОГНЯМ ГОРОДА.,EVENING. HOME THROUGH THE CITY LIGHTS.
+INTRO_HOME_ARRIVE,ДОМА.,HOME.
+INTRO_SLEEP,ОТБОЙ. ЗАВТРА СНОВА В ОФИС.,LIGHTS OUT. OFFICE AGAIN TOMORROW.

@@ -1,0 +1,11 @@
+{
+	"_comment": "Mock server content: daily office tasks. spot = office map cell where the player stands to start the task. difficulty = normal | hard | very_hard (the server multiplies the reward). skippable = the player may skip the task without a reward. On the real server this comes from the admin panel via Nakama storage.",
+	"tasks": [
+		{"id": "check_in", "title": "Отметиться на ресепшне", "description": "Скажи Марине доброе утро. Позже здесь будет сканирование QR-кода.", "room": "reception", "spot": [24, 21], "minigame": "check_in", "reward": 10},
+		{"id": "coffee", "title": "Сварить кофе команде", "description": "Налей три чашки ровно до отметки.", "room": "kitchen", "spot": [5, 19], "minigame": "coffee", "reward": 30, "difficulty": "hard", "skippable": true},
+		{"id": "docs", "title": "Разобрать входящие", "description": "Раскидай документы по лоткам: красные налево, белые направо.", "room": "open_space", "spot": [32, 3], "minigame": "paper_sort", "reward": 40},
+		{"id": "meeting_prep", "title": "Подготовить планёрку", "description": "Отсортируй бумаги к встрече.", "room": "meeting", "spot": [37, 5], "minigame": "paper_sort", "reward": 35},
+		{"id": "bubbles", "title": "Снять стресс", "description": "Полопай пупырку, пока не кончится время.", "room": "lounge", "spot": [39, 24], "minigame": "bubble_wrap", "reward": 20},
+		{"id": "brand_red", "title": "Найти настоящий Альфа-красный", "description": "Дизайнеры спорят об оттенках. Найди правильный красный пять раз подряд. Можно пропустить.", "room": "design", "spot": [55, 20], "minigame": "alfa_red", "reward": 50, "difficulty": "very_hard", "skippable": true}
+	]
+}
