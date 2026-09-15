@@ -1,18 +1,26 @@
 extends Node
 ## Dev check: walks through home, commute intro and office, driving the scenes directly and saving
 ## screenshots. The mock backend save is restored afterwards.
-## Run (GUI): godot --path client res://tools/dev_tour.tscn -- --device=pixel_8 --out=<dir>
+## Run (GUI): godot --path client res://tools/dev_tour.tscn -- --device=pixel_8 --out=<dir> [--shot-scale=2]
+## --shot-scale below 1 shrinks screenshots smoothly, 1 and above enlarges them with crisp pixels.
 
 const SAVE: String = "user://mock_backend.json"
 const BACKUP: String = "user://mock_backend.tour_backup.json"
 
 var _out: String = ""
+var _shot_scale: float = 0.5
 
 
 func _ready() -> void:
 	for argument: String in OS.get_cmdline_user_args():
 		if argument.begins_with("--out="):
 			_out = argument.trim_prefix("--out=")
+		elif argument.begins_with("--shot-scale="):
+			_shot_scale = maxf(0.1, argument.trim_prefix("--shot-scale=").to_float())
+	# The emulator's key help would end up in the screenshots.
+	var emulator: Node = get_node_or_null("/root/DeviceEmulator")
+	if emulator != null and emulator.get("_help") is Label:
+		(emulator.get("_help") as Label).visible = false
 	_start.call_deferred()
 
 
@@ -245,6 +253,7 @@ func _shot(shot_name: String) -> void:
 	await get_tree().process_frame
 	await get_tree().process_frame
 	var image: Image = get_tree().root.get_texture().get_image()
-	image.resize(image.get_width() / 2, image.get_height() / 2, Image.INTERPOLATE_BILINEAR)
+	var interpolation: Image.Interpolation = Image.INTERPOLATE_NEAREST if _shot_scale >= 1.0 else Image.INTERPOLATE_BILINEAR
+	image.resize(roundi(image.get_width() * _shot_scale), roundi(image.get_height() * _shot_scale), interpolation)
 	image.save_png("%s/t-%s.png" % [_out, shot_name])
 	print("shot ", shot_name)
