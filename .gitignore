@@ -130,8 +130,19 @@ coverage/
 # =========================================================
 .godot/
 *.translation
-export_presets.cfg
 /tools/godot/
+# Local toolchain installed by tools/setup-android.ps1
+/tools/jdk/
+/tools/android-sdk/
+/tools/gradle-home/
+/tools/downloads/
+/tools/android/
+# Built Android plugin (native/android) and export output
+/client/addons/office_game_android/bin/
+/client/android/
+/build/
+# GdUnit4 test reports
+/client/reports/
 
 # =========================================================
 #  Python
