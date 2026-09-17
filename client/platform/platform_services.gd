@@ -1,15 +1,149 @@
 extends Node
 ## Single entry point for platform-specific functionality (autoload "PlatformServices").
 ## Game code must use this instead of native plugins or JavaScriptBridge.
+## Implementations: AndroidPlatform (native plugin), WebPlatform (v2), DesktopPlatform (debug
+## emulation of phone sensors), PlatformBackend (no native features, e.g. iOS until its plugin exists).
 
 signal safe_rect_changed(rect: Rect2)
+signal steps_changed(steps: int)
+## Low-resolution RGB camera frame for the in-game preview.
+signal camera_frame(frame: Image)
+## Landmark name -> Vector3(x, y, in-frame likelihood), x and y normalized to the frame.
+signal pose_detected(landmarks: Dictionary)
+signal faces_detected(faces: Array[SensorModels.Face])
+signal markers_detected(marker_ids: PackedInt32Array)
+## Objects recognized in the camera frame, most confident first.
+signal labels_detected(labels: Array[SensorModels.ObjectLabel])
+signal qr_detected(text: String)
+signal speech_recognized(text: String, is_final: bool)
+signal speech_failed(error: String)
+
+const ANDROID_SCRIPT: String = "res://platform/android/android_platform.gd"
+const WEB_SCRIPT: String = "res://platform/web/web_platform.gd"
+const DESKTOP_SCRIPT: String = "res://platform/desktop/desktop_platform.gd"
 
 var _has_safe_rect_override: bool = false
 var _safe_rect_override: Rect2 = Rect2()
+var _backend: PlatformBackend
+var _microphone: MicrophoneCapture
 
 
 func _ready() -> void:
 	get_viewport().size_changed.connect(_emit_safe_rect)
+	_backend = _create_backend()
+	_backend.name = "Backend"
+	add_child(_backend)
+	_backend.steps_changed.connect(steps_changed.emit)
+	_backend.camera_frame.connect(camera_frame.emit)
+	_backend.pose_detected.connect(pose_detected.emit)
+	_backend.faces_detected.connect(faces_detected.emit)
+	_backend.markers_detected.connect(markers_detected.emit)
+	_backend.labels_detected.connect(labels_detected.emit)
+	_backend.qr_detected.connect(qr_detected.emit)
+	_backend.speech_recognized.connect(speech_recognized.emit)
+	_backend.speech_failed.connect(speech_failed.emit)
+	_microphone = MicrophoneCapture.new()
+	add_child(_microphone)
+
+
+func _create_backend() -> PlatformBackend:
+	var script_path: String = ""
+	if OS.has_feature("android"):
+		script_path = ANDROID_SCRIPT
+	elif OS.has_feature("web"):
+		script_path = WEB_SCRIPT
+	elif OS.has_feature("pc") and OS.is_debug_build():
+		script_path = DESKTOP_SCRIPT
+	if script_path.is_empty():
+		return PlatformBackend.new()
+	var script: GDScript = load(script_path)
+	return script.new() as PlatformBackend
+
+
+# --- Features --------------------------------------------------------------------
+
+
+func has_feature(feature: PlatformBackend.Feature) -> bool:
+	return _backend.has_feature(feature)
+
+
+func has_features(features: Array[PlatformBackend.Feature]) -> bool:
+	return features.all(func(feature: PlatformBackend.Feature) -> bool: return has_feature(feature))
+
+
+## Requests OS permissions for the features. Resolves to true when everything is granted.
+func request_access(features: Array[PlatformBackend.Feature]) -> bool:
+	# Platform overrides may wait for OS dialogs.
+	@warning_ignore("redundant_await")
+	return await _backend.request_access(features)
+
+
+# --- Motion ----------------------------------------------------------------------
+
+
+## Accelerometer in m/s^2 with gravity, Godot axes (x right, y up, z out of the screen).
+func get_acceleration() -> Vector3:
+	return _backend.get_acceleration()
+
+
+## Starts counting steps from zero; steps_changed reports the running total.
+func start_step_counter() -> void:
+	_backend.start_step_counter()
+
+
+func stop_step_counter() -> void:
+	_backend.stop_step_counter()
+
+
+# --- Camera ----------------------------------------------------------------------
+
+
+## Opens the camera. Frames arrive through camera_frame; detections through the signal of the mode.
+func start_camera(mode: PlatformBackend.CameraMode, front: bool = false) -> void:
+	_backend.start_camera(mode, front)
+
+
+func stop_camera() -> void:
+	_backend.stop_camera()
+
+
+# --- Audio -----------------------------------------------------------------------
+
+
+func start_microphone() -> void:
+	_microphone.start()
+
+
+func stop_microphone() -> void:
+	_microphone.stop()
+
+
+func get_microphone_sample_rate() -> float:
+	return _microphone.get_sample_rate()
+
+
+## Mono samples captured since the previous call.
+func read_microphone(max_frames: int) -> PackedFloat32Array:
+	return _microphone.read(max_frames)
+
+
+func start_speech(locale: String = "ru-RU") -> void:
+	_backend.start_speech(locale)
+
+
+func stop_speech() -> void:
+	_backend.stop_speech()
+
+
+## Stops every sensor a minigame may have left running.
+func stop_all() -> void:
+	stop_step_counter()
+	stop_camera()
+	stop_microphone()
+	stop_speech()
+
+
+# --- Screen ----------------------------------------------------------------------
 
 
 ## Area of the viewport (in viewport coordinates) not covered by notches, rounded corners or system bars.

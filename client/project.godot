@@ -15,6 +15,11 @@ PlatformServices="*res://platform/platform_services.gd"
 DeviceEmulator="*res://platform/emulator/device_emulator.gd"
 Backend="*res://scripts/services/backend.gd"
 Appearance="*res://scripts/services/appearance.gd"
+Presence="*res://scripts/services/presence.gd"
+
+[audio]
+
+driver/enable_input=true
 
 [debug]
 
@@ -40,6 +45,10 @@ theme/default_font_antialiasing=0
 theme/default_font_hinting=0
 theme/default_font_subpixel_positioning=0
 
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/gdUnit4/plugin.cfg", "res://addons/office_game_android/plugin.cfg")
+
 [input_devices]
 
 pointing/emulate_touch_from_mouse=true
@@ -54,6 +63,7 @@ locale/test="ru"
 renderer/rendering_method="gl_compatibility"
 renderer/rendering_method.mobile="gl_compatibility"
 textures/canvas_textures/default_texture_filter=0
+textures/vram_compression/import_etc2_astc=true
 2d/snap/snap_2d_transforms_to_pixel=true
 2d/snap/snap_2d_vertices_to_pixel=true
 environment/defaults/default_clear_color=Color(0.64, 0.6, 0.56, 1)
