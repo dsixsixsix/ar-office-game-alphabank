@@ -21,6 +21,11 @@ func _ready() -> void:
 	var emulator: Node = get_node_or_null("/root/DeviceEmulator")
 	if emulator != null and emulator.get("_help") is Label:
 		(emulator.get("_help") as Label).visible = false
+	# So would the desktop sensor emulator panel; the tour drives the emulated sensors itself.
+	var sensor_emulator: CanvasLayer = PlatformServices.get_node("Backend").get("_emulator") as CanvasLayer
+	if sensor_emulator != null:
+		sensor_emulator.layer = -100
+		sensor_emulator.visible = false
 	_start.call_deferred()
 
 
@@ -40,6 +45,7 @@ func _start() -> void:
 	await _commute_tour()
 	await _office_tour()
 	await _evening_tour()
+	await _office_screen_tour()
 	if FileAccess.file_exists(BACKUP):
 		DirAccess.copy_absolute(ProjectSettings.globalize_path(BACKUP), ProjectSettings.globalize_path(SAVE))
 		DirAccess.remove_absolute(ProjectSettings.globalize_path(BACKUP))
@@ -150,32 +156,20 @@ func _office_tour() -> void:
 	await _wait(1.0)
 	await _shot("o4_tasks")
 	(office.get("_task_panel") as TaskPanel).close_panel()
-	for task: BackendModels.TaskInfo in office.get("_tasks"):
-		if task.id == "coffee":
-			await _teleport(office, task.spot)
-			office.call("_go_to_task", task)
-	await _wait(1.2)
-	await _shot("o5_minigame")
-	(office.get("_minigame_panel") as MinigamePanel).emit_signal("_resolved", MinigamePanel.Outcome.CANCELLED)
-	await _wait(0.5)
+	await _minigame_tour(office)
 	office.call("_open_shop")
 	await _wait(1.2)
 	await _shot("o6_shop")
 	(office.get("_shop_panel") as ShopPanel).visible = false
-	for task: BackendModels.TaskInfo in office.get("_tasks"):
-		if task.id == "brand_red":
-			await _teleport(office, task.spot)
-			office.call("_go_to_task", task)
-	await _wait(1.2)
-	await _shot("o7_hard_minigame")
-	(office.get("_minigame_panel") as MinigamePanel).emit_signal("_resolved", MinigamePanel.Outcome.CANCELLED)
-	await _wait(0.5)
 	office.call("_open_tasks")
 	await _wait(1.0)
 	await _shot("o8_tasks_difficulty")
 	(office.get("_task_panel") as TaskPanel).close_panel()
 	# Close every task on the mock server so the "Go home" button appears.
+	# Check-in goes first: the server accepts other tasks only after a valid presence token.
 	var mock: MockBackend = Backend.get("_impl")
+	var token: String = QrPayload.parse(DevQrCodes.current_presence_code()).value
+	mock.complete_task("check_in", true, "tour-check-in-%d" % Time.get_ticks_usec(), {"presence_token": token})
 	for task: BackendModels.TaskInfo in office.get("_tasks"):
 		if task.skippable:
 			mock.skip_task(task.id)
@@ -188,6 +182,52 @@ func _office_tour() -> void:
 	office.call("_go_home")
 	await _wait(1.5)
 	await _shot("o10_walking_out")
+
+
+## Opens every task minigame, feeds the emulated sensors and takes a screenshot of each.
+func _minigame_tour(office: Node) -> void:
+	var desktop: Node = PlatformServices.get_node("Backend")
+	var panel: MinigamePanel = office.get("_minigame_panel")
+	var setups: Dictionary[String, Callable] = {
+		"carry_coffee": func() -> void: desktop.set("tilt", Vector2(14, -8)),
+		"find_object": func() -> void: desktop.set("label_id", OfficeObjects.all_labels()[0]),
+		"squats": func() -> void: desktop.set("squat_depth", 0.8),
+		"selfie": func() -> void:
+			desktop.set("face_count", 2)
+			desktop.set("smiling", false),
+		"scavenger_hunt": func() -> void: desktop.set("marker_id", 2),
+		"stairs": func() -> void: desktop.call("add_steps", 47),
+	}
+	var index: int = 0
+	for task: BackendModels.TaskInfo in office.get("_tasks"):
+		index += 1
+		await _teleport(office, task.spot)
+		office.call("_go_to_task", task)
+		await _wait(0.8)
+		if setups.has(task.minigame):
+			setups[task.minigame].call()
+		await _wait(0.9)
+		await _shot("g%d_%s" % [index, task.minigame])
+		if task.minigame == "tongue_twister":
+			var game: Minigame = panel.get("_game")
+			game.call("_listen")
+			await _wait(0.3)
+			desktop.call("emit_speech", "Шла Саша по шоссе")
+			await _wait(0.1)
+			await _shot("g%d_%s_listening" % [index, task.minigame])
+		if panel.is_open():
+			panel.emit_signal("_resolved", MinigamePanel.Outcome.CANCELLED)
+		desktop.set("tilt", Vector2.ZERO)
+		await _wait(0.5)
+	office.call("_scan_code")
+	await _wait(1.0)
+	await _shot("g_scan_qr")
+	var scanner: Minigame = panel.get("_game")
+	scanner.call("_toggle_profile")
+	await _wait(0.4)
+	await _shot("g_profile_qr")
+	panel.emit_signal("_resolved", MinigamePanel.Outcome.CANCELLED)
+	await _wait(0.5)
 
 
 func _evening_tour() -> void:
@@ -204,6 +244,13 @@ func _evening_tour() -> void:
 
 
 ## Holds a finger to the left of the player and keeps it there: the player should keep walking left.
+## The reception screen with the rotating presence code, normally shown on a TV in the office.
+func _office_screen_tour() -> void:
+	get_tree().change_scene_to_file("res://scenes/kiosk/office_screen.tscn")
+	await _wait(1.2)
+	await _shot("k1_office_screen")
+
+
 func _drag_check(scene: Node) -> void:
 	var viewport: Viewport = get_viewport()
 	var player: Player = scene.get("_player")
