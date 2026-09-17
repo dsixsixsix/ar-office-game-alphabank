@@ -21,6 +21,11 @@ const RARITY_WEIGHTS: Dictionary[String, int] = {"common": 58, "rare": 28, "epic
 const RARITY_ORDER: Array[String] = ["legendary", "epic", "rare", "common"]
 const APPROVAL_RARITIES: Array[String] = ["epic", "legendary"]
 const STARTER_CAR: String = "vaz2104"
+## Minigame whose proof is the rotating office token; completing it marks the player present today.
+const PRESENCE_MINIGAME: String = "presence_qr"
+const PLAYER_ID: String = "player"
+## Minigame score (0..1) adds at most this share of the reward.
+const MAX_SCORE_BONUS: float = 0.2
 
 var _state: Dictionary = {}
 var _tasks: Array = []
@@ -38,16 +43,18 @@ func _init() -> void:
 	for key: String in ["balance", "streak", "last_login_day"]:
 		if not _state.has(key):
 			_state[key] = 0
-	for key: String in ["completed", "skipped", "purchases", "earned", "outfit"]:
+	for key: String in ["completed", "skipped", "purchases", "earned", "outfit", "colleagues"]:
 		if not _state.has(key):
 			_state[key] = {}
-	for key: String in ["used_keys", "ledger", "owned_items"]:
+	for key: String in ["used_keys", "ledger", "owned_items", "used_presence_tokens", "suspicious"]:
 		if not _state.has(key):
 			_state[key] = []
 	if not _state.has("cars"):
 		_state["cars"] = [STARTER_CAR]
 	if not _state.has("car"):
 		_state["car"] = STARTER_CAR
+	if not _state.has("presence_day"):
+		_state["presence_day"] = 0
 
 
 func login() -> BackendModels.Profile:
@@ -61,6 +68,7 @@ func login() -> BackendModels.Profile:
 		_state["streak"] = int(_state["streak"]) + 1 if last_day == today - 1 else 1
 		_state["last_login_day"] = today
 		_save()
+	profile.user_id = PLAYER_ID
 	profile.streak_days = int(_state["streak"])
 	profile.multiplier = _multiplier()
 	profile.balance = int(_state["balance"])
@@ -86,6 +94,8 @@ func list_tasks() -> Array[BackendModels.TaskInfo]:
 		var spot: Array = data.get("spot", [0, 0])
 		info.spot = Vector2i(int(spot[0]), int(spot[1]))
 		info.minigame = data["minigame"]
+		info.fallback_minigame = str(data.get("fallback", ""))
+		info.params = data.get("params", {})
 		info.base_reward = int(data["reward"])
 		info.difficulty = _difficulty(data)
 		info.difficulty_multiplier = DIFFICULTY_MULTIPLIERS[info.difficulty]
@@ -118,38 +128,92 @@ func skip_task(task_id: String) -> BackendModels.ActionResult:
 	return result
 
 
-func complete_task(task_id: String, success: bool, operation_key: String) -> BackendModels.TaskResult:
+func complete_task(task_id: String, success: bool, operation_key: String, proof: Dictionary = {}) -> BackendModels.TaskResult:
 	var result: BackendModels.TaskResult = BackendModels.TaskResult.new()
 	result.balance = int(_state["balance"])
 	if not _claim_key(operation_key):
 		result.error = "duplicate_operation"
 		return result
 	var task: Dictionary = _find(_tasks, task_id)
-	if task.is_empty():
-		result.error = "unknown_task"
+	result.error = _task_error(task, task_id, success, proof)
+	if not result.error.is_empty():
 		return result
-	if not success:
-		result.error = "task_failed"
-		return result
-	var done: Array = _day_list("completed")
-	if done.has(task_id):
-		result.error = "already_completed"
-		return result
-	if _day_list("skipped").has(task_id):
-		result.error = "task_skipped"
-		return result
+	var is_check_in: bool = task["minigame"] == PRESENCE_MINIGAME
+	if is_check_in:
+		# Presence counts even when the daily coin cap is already reached.
+		_state["presence_day"] = _today()
+		_save()
 	var earned_today: int = int((_state["earned"] as Dictionary).get(str(_today()), 0))
-	var reward: int = mini(_task_reward(task), DAILY_COIN_CAP - earned_today)
+	var score: float = clampf(float(proof.get("score", 0.0)), 0.0, 1.0)
+	var reward: int = mini(roundi(_task_reward(task) * (1.0 + MAX_SCORE_BONUS * score)), DAILY_COIN_CAP - earned_today)
 	if reward <= 0:
 		result.error = "daily_cap_reached"
 		return result
-	done.append(task_id)
+	if task["minigame"] == "selfie":
+		_day_list("colleagues").append(str(proof["colleague_id"]))
+	_day_list("completed").append(task_id)
 	(_state["earned"] as Dictionary)[str(_today())] = earned_today + reward
 	_credit(reward, "task_reward", task_id)
 	result.ok = true
 	result.reward = reward
 	result.balance = int(_state["balance"])
 	return result
+
+
+## Why the task can't be completed now, or "" when it can. Bad tokens and colleague codes are logged as suspicious.
+func _task_error(task: Dictionary, task_id: String, success: bool, proof: Dictionary) -> String:
+	if task.is_empty():
+		return "unknown_task"
+	if not success:
+		return "task_failed"
+	if _day_list("completed").has(task_id):
+		return "already_completed"
+	if _day_list("skipped").has(task_id):
+		return "task_skipped"
+	# The real server also checks the office IP on every task call.
+	var error: String = ""
+	if task["minigame"] == PRESENCE_MINIGAME:
+		error = _verify_presence_token(str(proof.get("presence_token", "")))
+	else:
+		error = _verify_present_today()
+	if error.is_empty() and task["minigame"] == "selfie":
+		error = _verify_colleague(str(proof.get("colleague_id", "")))
+	if not error.is_empty() and error != "presence_required":
+		_log_suspicious(task_id, error)
+	return error
+
+
+## Rotating office token: valid signature, current time step, office known, never used before.
+func _verify_presence_token(token: String) -> String:
+	if token.is_empty():
+		return "presence_token_invalid"
+	if PresenceToken.verify(DevQrCodes.presence_secret(), token, Time.get_unix_time_from_system()) < 0:
+		return "presence_token_invalid"
+	if PresenceToken.office_of(token) != DevQrCodes.OFFICE_ID:
+		return "presence_token_invalid"
+	var used: Array = _state["used_presence_tokens"]
+	if used.has(token):
+		return "presence_token_reused"
+	used.append(token)
+	return ""
+
+
+func _verify_present_today() -> String:
+	return "" if int(_state["presence_day"]) == _today() else "presence_required"
+
+
+func _verify_colleague(colleague_id: String) -> String:
+	var payload: QrPayload = QrPayload.parse(QrPayload.user(colleague_id))
+	if not payload.is_valid() or colleague_id == PLAYER_ID:
+		return "colleague_invalid"
+	if _day_list("colleagues").has(colleague_id):
+		return "colleague_already_used"
+	return ""
+
+
+func _log_suspicious(task_id: String, reason: String) -> void:
+	(_state["suspicious"] as Array).append({"t": Time.get_unix_time_from_system(), "task": task_id, "reason": reason})
+	_save()
 
 
 func get_shop() -> BackendModels.ShopState:

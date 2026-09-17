@@ -1,6 +1,7 @@
 class_name CheckInMinigame
 extends Minigame
-## Placeholder check-in. The real flow will scan the rotating office QR through PlatformServices.
+## Screen-only check-in from the first prototype: a button instead of the office QR code.
+## Kept as the default minigame for unknown kinds; the server grants nothing without a presence token.
 
 
 func _ready() -> void:

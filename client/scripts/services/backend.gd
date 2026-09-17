@@ -27,9 +27,10 @@ func list_tasks() -> Array[BackendModels.TaskInfo]:
 	return _impl.list_tasks()
 
 
-func complete_task(task_id: String, success: bool) -> BackendModels.TaskResult:
+## `proof` carries the minigame evidence (presence token, colleague id, score); the server validates it.
+func complete_task(task_id: String, success: bool, proof: Dictionary = {}) -> BackendModels.TaskResult:
 	await _latency()
-	var result: BackendModels.TaskResult = _impl.complete_task(task_id, success, _operation_key())
+	var result: BackendModels.TaskResult = _impl.complete_task(task_id, success, _operation_key(), proof)
 	_set_balance(result.balance)
 	return result
 

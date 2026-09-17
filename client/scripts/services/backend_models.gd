@@ -6,6 +6,8 @@ extends RefCounted
 class Profile:
 	extends RefCounted
 
+	## Server account id; shown to colleagues as a profile QR code.
+	var user_id: String = ""
 	var balance: int = 0
 	var streak_days: int = 1
 	## Reward multiplier for the current streak, e.g. 1.5.
@@ -27,6 +29,10 @@ class TaskInfo:
 	## Office map cell where the player stands to start the task.
 	var spot: Vector2i
 	var minigame: String
+	## Screen-only minigame used when the device lacks the sensors `minigame` needs; empty = none.
+	var fallback_minigame: String = ""
+	## Minigame settings from the admin panel, e.g. {"steps": 120}.
+	var params: Dictionary = {}
 	var base_reward: int
 	## Final reward: base reward x difficulty multiplier x streak multiplier.
 	var reward: int

@@ -1,6 +1,8 @@
 extends WorldScene
 ## Office gameplay: tap-to-move, NPC conversations, task markers with minigames and the reward shop.
 ## Once every task is completed or skipped, the player can go home through the entrance.
+## "QR" scans a room door code (the character walks to that room), the office screen code
+## (starts the check-in) or a colleague's profile code.
 
 const TALK_DISTANCE: float = 40.0
 ## NPCs can be talked to from this many cells away, e.g. across the reception desk.
@@ -12,6 +14,8 @@ const FADE_TIME: float = 0.5
 const EXIT_FADE: float = 0.45
 ## The walk to the exit can cross the whole floor, so the player hurries.
 const EXIT_SPEED_FACTOR: float = 1.8
+## Task minigame that reads the office screen code.
+const CHECK_IN_MINIGAME: String = "presence_qr"
 
 var _pending_npc: Npc
 var _pending_task: BackendModels.TaskInfo
@@ -22,6 +26,8 @@ var _dialogues: DialogueRepository = DialogueRepository.new()
 var _tasks: Array[BackendModels.TaskInfo] = []
 var _pins: Dictionary[String, TaskPin] = {}
 var _home_button: Button
+## Room reached physically while a modal was open; the character walks there once it closes.
+var _pending_room: StringName = &""
 
 @onready var _dialogue: DialogueBox = $DialogueBox
 @onready var _task_panel: TaskPanel = $TaskPanel
@@ -40,7 +46,9 @@ func _ready() -> void:
 	_hud.set_title(tr("HUD_TITLE"))
 	_hud.set_hint(tr("HUD_HINT"))
 	_hud.add_action(tr("HUD_TASKS"), true).pressed.connect(_open_tasks)
+	_hud.add_action(tr("HUD_SCAN"), false).pressed.connect(_scan_code)
 	_hud.add_action(tr("HUD_SHOP"), false).pressed.connect(_open_shop)
+	Presence.zone_changed.connect(_on_zone_changed)
 	_task_panel.layout = _map.layout
 	_task_panel.go_requested.connect(_go_to_task)
 	_task_panel.skip_requested.connect(_skip_task)
@@ -52,6 +60,10 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	super(delta)
+	if _pending_room != &"" and not _is_modal_open():
+		var room_id: StringName = _pending_room
+		_pending_room = &""
+		_walk_to_room(room_id)
 	if _pending_npc != null and not _talking and _player.global_position.distance_to(_pending_npc.global_position) <= TALK_DISTANCE:
 		_talk_to(_pending_npc)
 
@@ -193,14 +205,19 @@ func _go_to_task(task: BackendModels.TaskInfo) -> void:
 
 func _start_task(task: BackendModels.TaskInfo) -> void:
 	_player.face(Vector2.UP)
+	_busy = true
 	var outcome: MinigamePanel.Outcome = await _minigame_panel.run(task)
+	_busy = false
+	if outcome == MinigamePanel.Outcome.UNAVAILABLE:
+		_hud.flash_message(tr("MG_UNAVAILABLE"))
+		return
 	if outcome == MinigamePanel.Outcome.SKIPPED:
 		await _skip_task(task)
 		return
 	if outcome != MinigamePanel.Outcome.SUCCESS:
 		return
 	_busy = true
-	var result: BackendModels.TaskResult = await Backend.complete_task(task.id, true)
+	var result: BackendModels.TaskResult = await Backend.complete_task(task.id, true, _minigame_panel.last_proof)
 	_busy = false
 	if result.ok:
 		_hud.play_reward(get_canvas_transform() * _player.global_position, result.reward)
@@ -223,6 +240,62 @@ func _skip_task(task: BackendModels.TaskInfo) -> void:
 	_busy = false
 	_hud.flash_message(tr("TASK_SKIP_DONE") if result.ok else tr("ERROR_" + result.error.to_upper()))
 	await _refresh_tasks()
+
+
+# --- QR codes and rooms ---------------------------------------------------------
+
+
+func _scan_code() -> void:
+	if _is_modal_open():
+		return
+	_cancel_pending_actions()
+	_busy = true
+	var payload: QrPayload = await _minigame_panel.scan_code()
+	_busy = false
+	if payload == null:
+		return
+	match payload.kind:
+		QrPayload.Kind.ROOM:
+			if _map.layout.find_room(StringName(payload.value)) == null:
+				_hud.flash_message(tr("QR_UNKNOWN_ROOM"))
+				return
+			Presence.set_zone_from_qr(StringName(payload.value))
+			_walk_to_room(StringName(payload.value))
+		QrPayload.Kind.PRESENCE:
+			_start_check_in()
+		QrPayload.Kind.USER:
+			_hud.flash_message(tr("QR_COLLEAGUE_HINT"))
+
+
+## The office screen code was scanned outside the task: walk to the check-in task and start it.
+func _start_check_in() -> void:
+	for task: BackendModels.TaskInfo in _tasks:
+		if task.minigame == CHECK_IN_MINIGAME and not task.is_closed():
+			_go_to_task(task)
+			return
+	_hud.flash_message(tr("QR_ALREADY_CHECKED_IN"))
+
+
+func _on_zone_changed(room_id: StringName) -> void:
+	if _is_modal_open():
+		_pending_room = room_id
+
+
+## The character walks to the walkable cell closest to the room centre.
+func _walk_to_room(room_id: StringName) -> void:
+	var room: MapLayout.Room = _map.layout.find_room(room_id)
+	if room == null:
+		return
+	var current: MapLayout.Room = _map.get_room_at(_player_cell())
+	if current != null and current.id == room_id:
+		return
+	var floor_rect: Rect2i = room.floor_rect()
+	var center: Vector2 = _map.cell_to_world(floor_rect.position + floor_rect.size / 2)
+	var cell: Vector2i = _map.find_nearest_walkable(center, maxi(floor_rect.size.x, floor_rect.size.y))
+	if cell == WorldMap.INVALID_CELL:
+		return
+	_hud.flash_message(tr("QR_GOING_TO_ROOM") % tr(room.name_key))
+	_walk_to_cell(cell)
 
 
 # --- End of the day --------------------------------------------------------------

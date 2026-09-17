@@ -14,7 +14,7 @@ HOME_ROOM_HALL,Прихожая,Hallway
 HOME_ROOM_LIVING,Гостиная,Living room
 HOME_ROOM_KITCHEN,Кухня,Kitchen
 HUD_TITLE,АЛЬФА ОФИС,ALFA OFFICE
-HUD_HINT,"Нажми на карту - иди. Красные метки - задания: нажми, и игра начнётся на месте","Tap the map to walk. Red markers are tasks: tap one to go and start it"
+HUD_HINT,"Нажми на карту - иди. Красные метки - задания: нажми, и игра начнётся на месте",Tap the map to walk. Red markers are tasks: tap one to go and start it
 HUD_HOME_TITLE,ДОМА,AT HOME
 HUD_HOME_HINT,"Гуляй по квартире. Шкаф - гардероб, ноутбук или дверь - поехать в офис","Walk around the flat. Wardrobe for outfits, laptop or door to go to the office"
 HUD_BLOCKED,Туда не пройти,Can't go there
@@ -22,7 +22,7 @@ HUD_TASKS,ЗАДАНИЯ,TASKS
 HUD_SHOP,МАГАЗИН,SHOP
 HUD_GO_HOME,ОТПРАВИТЬСЯ ДОМОЙ,GO HOME
 HUD_ALL_DONE,Все задания закрыты! Можно домой,All tasks closed! Time to go home
-HUD_GO_HOME_REMARK,"Всё, на сегодня хватит!","That's it for today!"
+HUD_GO_HOME_REMARK,"Всё, на сегодня хватит!",That's it for today!
 DIALOGUE_YOU,Ты,You
 CHOICE_GO_OFFICE,Поехать в офис,Go to the office
 CHOICE_STAY,Ещё побуду дома,Stay a bit longer
@@ -128,3 +128,77 @@ INTRO_LEAVE_OFFICE,РАБОЧИЙ ДЕНЬ ОКОНЧЕН.,THE WORKDAY IS OVER.
 INTRO_NIGHT_DRIVE,ВЕЧЕР. ДОМОЙ ПО ОГНЯМ ГОРОДА.,EVENING. HOME THROUGH THE CITY LIGHTS.
 INTRO_HOME_ARRIVE,ДОМА.,HOME.
 INTRO_SLEEP,ОТБОЙ. ЗАВТРА СНОВА В ОФИС.,LIGHTS OUT. OFFICE AGAIN TOMORROW.
+HUD_SCAN,QR,QR
+QR_SCAN_TITLE,Сканер QR,QR scanner
+QR_SCAN_HINT,Наведи камеру на QR-код у двери комнаты или на экране офиса,Point the camera at a room door code or the office screen
+QR_WRONG_CODE,Это не тот QR-код,That's not the right QR code
+QR_UNKNOWN_ROOM,Такой комнаты нет на карте,No such room on the map
+QR_GOING_TO_ROOM,Идём: %s,Heading to: %s
+QR_COLLEAGUE_HINT,Это профиль коллеги. Он нужен в задании «Селфи с коллегой»,That's a colleague's profile. Use it in the selfie task
+QR_ALREADY_CHECKED_IN,Ты уже отметился сегодня,You've already checked in today
+MG_NO_SENSORS,На этом устройстве нет нужных датчиков.,This device lacks the required sensors.
+MG_NO_PERMISSION,Нет доступа к датчикам.,No access to the sensors.
+MG_FALLBACK,Играем в упрощённую версию.,Playing the simplified version.
+MG_UNAVAILABLE,Задание недоступно на этом устройстве,This task isn't available on this device
+MG_PRESENCE_HINT,Отсканируй QR-код на экране у ресепшна,Scan the QR code on the reception screen
+MG_CARRY_HINT,"Держи телефон ровно, как поднос, и неси кофе: %s",Hold the phone flat like a tray and carry the coffee to: %s
+MG_CARRY_START,Кофе на кухне. Отсканируй QR у двери: %s,The coffee is in the kitchen. Scan the door code: %s
+MG_CARRY_FINISH,Отсканируй QR у двери: %s,Scan the door code: %s
+MG_CARRY_WRONG_ROOM,Не та комната. Нужна: %s,Wrong room. Go to: %s
+MG_CARRY_ARRIVED,Я НА МЕСТЕ,I'M THERE
+MG_CARRY_LEVEL,Кофе: %d%%,Coffee: %d%%
+MG_STAIRS_HINT,Пройди %d шагов по офису. Телефон можно убрать в карман,Walk %d steps around the office. The phone can stay in your pocket
+MG_FOUND,Найдено: %d/%d,Found: %d/%d
+MG_SQUATS_HINT,"Поставь телефон так, чтобы были видны ноги. Сделай %d приседаний",Place the phone so your legs are visible. Do %d squats
+MG_SQUATS_NO_BODY,Не вижу ног,Can't see your legs
+MG_SQUATS_DOWN,Вниз!,Down!
+MG_SQUATS_UP,Вверх!,Up!
+MG_SING_HINT,"Спой ноту и держи, пока полоска не заполнится",Sing the note and hold it until the bar fills
+MG_SING_SILENCE,тишина,silence
+MG_TWISTER_HINT,Нажми и произнеси скороговорку вслух,Press and say the tongue twister aloud
+MG_TWISTER_SPEAK,ГОВОРИТЬ,SPEAK
+MG_TWISTER_LISTENING,СЛУШАЮ...,LISTENING...
+MG_TWISTER_GOOD,Чисто! Следующая,Clean! Next one
+MG_TWISTER_AGAIN,"Не разобрал, ещё раз","Didn't catch that, try again"
+MG_TWISTER_ERROR,Распознавание не сработало: %s,Recognition failed: %s
+MG_SELFIE_HINT,Встаньте вдвоём перед фронтальной камерой и улыбнитесь,Stand together in front of the selfie camera and smile
+MG_SELFIE_FACES,"Улыбок: %d, лиц: %d","Smiles: %d, faces: %d"
+MG_SELFIE_SCAN,Отсканируй QR-код из профиля коллеги,Scan the QR code from your colleague's profile
+MG_HUNT_HINT,Найди метки на предметах и наведи на них камеру,Find the markers on objects and point the camera at them
+MG_HUNT_COOLER,Кулер,Water cooler
+MG_HUNT_PLANT,Растение,Plant
+MG_HUNT_LOGO,Логотип,Logo
+NOTE_C,ДО,C
+NOTE_CS,ДО#,C#
+NOTE_D,РЕ,D
+NOTE_DS,РЕ#,D#
+NOTE_E,МИ,E
+NOTE_F,ФА,F
+NOTE_FS,ФА#,F#
+NOTE_G,СОЛЬ,G
+NOTE_GS,СОЛЬ#,G#
+NOTE_A,ЛЯ,A
+NOTE_AS,ЛЯ#,A#
+NOTE_B,СИ,B
+ERROR_PRESENCE_REQUIRED,Сначала отметься на ресепшне,Check in at reception first
+ERROR_PRESENCE_TOKEN_INVALID,QR-код устарел или недействителен,The QR code has expired or is invalid
+ERROR_PRESENCE_TOKEN_REUSED,Этот QR-код уже использован,This QR code has already been used
+ERROR_COLLEAGUE_INVALID,Неверный профиль коллеги,Invalid colleague profile
+ERROR_COLLEAGUE_ALREADY_USED,С этим коллегой селфи уже было сегодня,You've already taken a selfie with this colleague today
+PROFILE_TITLE,Мой QR,My QR
+PROFILE_HINT,Покажи код коллеге для задания «Селфи с коллегой»,Show this code to a colleague for the selfie task
+OFFICE_SCREEN_HINT,"Отсканируй в игре «Альфа Офис», чтобы отметиться",Scan in Alfa Office to check in
+OFFICE_SCREEN_REFRESH,Код обновится через %d с,New code in %d s
+MG_FIND_OBJECT_HINT,Покажи камере названный предмет и подержи в кадре,Show the named object to the camera and hold it in frame
+MG_FIND_OBJECT_SEEN,Вижу: %s,I see: %s
+MG_FIND_OBJECT_NOTHING,Ничего не узнаю,I don't recognize anything
+OBJ_MUG,Кружка,Mug
+OBJ_PLANT,Растение,Plant
+OBJ_SCREEN,Монитор,Screen
+OBJ_CHAIR,Стул,Chair
+OBJ_CLOCK,Часы,Clock
+OBJ_PHONE,Телефон,Phone
+OBJ_WHITEBOARD,Маркерная доска,Whiteboard
+OBJ_PAPERS,Бумаги,Papers
+OBJ_GLASSES,Очки,Glasses
+OBJ_BAG,Сумка,Bag

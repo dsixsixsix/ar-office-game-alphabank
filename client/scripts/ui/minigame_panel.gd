@@ -2,12 +2,17 @@ class_name MinigamePanel
 extends CanvasLayer
 ## Modal host for a task minigame. run() resolves with the outcome once the player finishes, closes
 ## or skips it. Hard tasks show their difficulty tag; skippable ones get a "Skip" button.
+## Physical minigames ask for sensor permissions first; without the sensors the task's screen-only
+## fallback runs instead, and without a fallback the task is unavailable on this device.
 
 signal _resolved(outcome: Outcome)
 
-enum Outcome { SUCCESS, FAILED, CANCELLED, SKIPPED }
+enum Outcome { SUCCESS, FAILED, CANCELLED, SKIPPED, UNAVAILABLE }
 
 const RESULT_DELAY: float = 0.9
+
+## Evidence collected by the last finished minigame, for Backend.complete_task().
+var last_proof: Dictionary = {}
 
 var _panel: PanelContainer
 var _title: Label
@@ -18,6 +23,7 @@ var _footer: HBoxContainer
 var _badge_slot: HBoxContainer
 var _skip: Button
 var _game: Minigame
+var _notice: Label
 
 
 func _ready() -> void:
@@ -49,6 +55,12 @@ func _ready() -> void:
 	_close.pressed.connect(func() -> void: _resolved.emit(Outcome.CANCELLED))
 	header.add_child(_close)
 
+	_notice = UiStyle.make_label("", 10, UiStyle.HARD)
+	_notice.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_notice.custom_minimum_size = Vector2(Minigame.AREA_SIZE.x, 0)
+	_notice.visible = false
+	column.add_child(_notice)
+
 	_host = Control.new()
 	_host.custom_minimum_size = Minigame.AREA_SIZE
 	column.add_child(_host)
@@ -78,28 +90,71 @@ func is_open() -> bool:
 
 
 func run(task: BackendModels.TaskInfo) -> Outcome:
-	_title.text = task.title
+	last_proof = {}
+	var kind: String = await _pick_minigame(task)
+	if kind.is_empty():
+		return Outcome.UNAVAILABLE
+	var game: Minigame = Minigame.create(kind)
+	game.task = task
+	return await _play(game, task.title, task.difficulty, task.difficulty_multiplier, task.skippable)
+
+
+## Opens the camera to read any game QR code. Resolves to null when cancelled or unavailable.
+func scan_code() -> QrPayload:
+	last_proof = {}
+	_notice.visible = false
+	var features: Array[PlatformBackend.Feature] = [PlatformBackend.Feature.QR_SCAN]
+	if not PlatformServices.has_features(features) or not await PlatformServices.request_access(features):
+		return null
+	var outcome: Outcome = await _play(QrScanMinigame.new(), tr("QR_SCAN_TITLE"), "normal", 1.0, false)
+	if outcome != Outcome.SUCCESS:
+		return null
+	return QrPayload.parse(str(last_proof.get(QrScanMinigame.PROOF_KEY, "")))
+
+
+func _play(game: Minigame, title: String, difficulty: String, multiplier: float, skippable: bool) -> Outcome:
+	_title.text = title
 	_result.visible = false
 	_close.disabled = false
 	_skip.disabled = false
 	for child: Node in _badge_slot.get_children():
 		child.queue_free()
-	if task.difficulty != "normal":
-		var badge: PanelContainer = UiStyle.make_difficulty_badge(task.difficulty, task.difficulty_multiplier)
+	if difficulty != "normal":
+		var badge: PanelContainer = UiStyle.make_difficulty_badge(difficulty, multiplier)
 		badge.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 		_badge_slot.add_child(badge)
-	_skip.visible = task.skippable
-	_footer.visible = task.difficulty != "normal" or task.skippable
-	_game = Minigame.create(task.minigame)
+	_skip.visible = skippable
+	_footer.visible = difficulty != "normal" or skippable
+	_game = game
 	_game.finished.connect(_on_game_finished)
 	_host.add_child(_game)
 	_host.move_child(_game, 0)
 	visible = true
 	var outcome: Outcome = await _resolved
+	last_proof = _game.proof.duplicate(true)
 	_game.queue_free()
 	_game = null
 	visible = false
 	return outcome
+
+
+## The task's own minigame when the device has its sensors and the player allows them, else the fallback.
+func _pick_minigame(task: BackendModels.TaskInfo) -> String:
+	_notice.text = ""
+	_notice.visible = false
+	var features: Array[PlatformBackend.Feature] = Minigame.required_features(task.minigame)
+	var reason: String = ""
+	if not PlatformServices.has_features(features):
+		reason = tr("MG_NO_SENSORS")
+	elif not await PlatformServices.request_access(features):
+		reason = tr("MG_NO_PERMISSION")
+	if reason.is_empty():
+		return task.minigame
+	if task.fallback_minigame.is_empty():
+		return ""
+	_notice.text = reason + " " + tr("MG_FALLBACK")
+	_notice.visible = true
+	return task.fallback_minigame
 
 
 func show_reward(amount: int) -> void:
@@ -109,6 +164,9 @@ func show_reward(amount: int) -> void:
 func _on_game_finished(success: bool) -> void:
 	_close.disabled = true
 	_skip.disabled = true
+	if not _game.shows_result:
+		_resolved.emit(Outcome.SUCCESS if success else Outcome.FAILED)
+		return
 	_result.visible = true
 	_result.text = tr("MG_DONE") if success else tr("MG_FAIL")
 	await get_tree().create_timer(RESULT_DELAY).timeout
