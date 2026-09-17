@@ -10,7 +10,9 @@ param(
     [ValidateSet('pixel_8', 'iphone_15', 'iphone_17_pro', 'iphone_17_pro_max', 'galaxy_s24', 'android_hd', 'iphone_se', 'desktop')]
     [string]$Device = 'pixel_8',
     # Monitor pixel density for the real-size phone window; the OS value is used when omitted.
-    [double]$ScreenDpi = 0
+    [double]$ScreenDpi = 0,
+    # Show the reception screen with the rotating presence QR code instead of the game.
+    [switch]$OfficeScreen
 )
 
 $ErrorActionPreference = 'Stop'
@@ -29,7 +31,10 @@ if (-not (Test-Path (Join-Path $project '.godot'))) {
 }
 
 $arguments = @('--path', "`"$project`"")
-if ($Device -ne 'desktop') {
+if ($OfficeScreen) {
+    $arguments += @('res://scenes/kiosk/office_screen.tscn', '--resolution', '720x960')
+}
+elseif ($Device -ne 'desktop') {
     $arguments += @('--', "--device=$Device")
     if ($ScreenDpi -gt 0) {
         $arguments += "--screen-dpi=$([string]::Format([cultureinfo]::InvariantCulture, '{0}', $ScreenDpi))"
