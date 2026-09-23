@@ -4,6 +4,7 @@
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <uses-feature android:name="android.hardware.camera.any" android:required="false" />
     <uses-feature android:name="android.hardware.microphone" android:required="false" />
@@ -22,5 +23,10 @@
             android:value="${godotPluginPackageName}.OfficeGamePlugin" />
 
         <!-- ML Kit downloads nothing at runtime: the barcode, face and pose models are bundled. -->
+
+        <!-- Posts the reminders scheduled by the game with AlarmManager. -->
+        <receiver
+            android:name="ru.alfaoffice.game.android.NotificationReceiver"
+            android:exported="false" />
     </application>
 </manifest>

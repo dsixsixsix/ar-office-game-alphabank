@@ -1,6 +1,7 @@
 class_name StreakScene
 extends IntroScene
-## Big login-streak number with the points multiplier and the first-login bonus, in a tall panel.
+## Big office-streak number with the points multiplier, the first-login bonus, and the bad news from
+## the days the player missed: a lost streak and absence fines.
 
 const COIN: Texture2D = preload("res://assets/ui/alfa_coin.png")
 const VIEW: Rect2i = Rect2i(0, 0, 320, 230)
@@ -52,6 +53,10 @@ func _draw_card(canvas: CanvasItem) -> void:
 		draw_centered(canvas, tr("INTRO_STREAK_DAYS"), 140, 12, RED)
 	if time > 0.8:
 		draw_centered(canvas, tr("INTRO_MULTIPLIER") % ("%.1f" % intro.profile.multiplier), 170, 15, WHITE)
+	if time > 1.0 and intro.profile.lost_streak > 0:
+		draw_centered(canvas, tr("INTRO_STREAK_LOST") % intro.profile.lost_streak, 188, 9, Color("#ff8a80"))
+	if time > 1.2 and intro.profile.fined_coins > 0:
+		draw_centered(canvas, tr("INTRO_FINED") % intro.profile.fined_coins, 214, 10, RED)
 	if time > 1.2 and intro.profile.welcome_bonus > 0:
 		var text: String = tr("INTRO_WELCOME") % intro.profile.welcome_bonus
 		draw_centered(canvas, text, 202, 10, Color("#f7c948"))

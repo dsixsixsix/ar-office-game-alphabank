@@ -15,6 +15,8 @@ const LAYOUT_SETTLE_FRAMES: int = 2
 const MARGIN: float = 8.0
 const ACTION_HEIGHT: float = 38.0
 const MAX_FLYING_COINS: int = 12
+## Corner buttons sit this far below the top margin, under the coin counter.
+const CORNER_TOP: float = 32.0
 
 var _glitch_left: float = 0.0
 var _message_left: float = 0.0
@@ -24,6 +26,7 @@ var _root: Control
 var _brand: Label
 var _room_label: Label
 var _coins: CoinCounter
+var _corner: HBoxContainer
 var _actions: HBoxContainer
 var _hint_panel: PanelContainer
 var _hint: Label
@@ -61,6 +64,11 @@ func set_title(text: String) -> void:
 func set_hint(text: String) -> void:
 	_hint.text = text
 	_hint_panel.visible = not text.is_empty()
+
+
+## Small buttons in the top-right corner under the balance (inbox, profile).
+func add_corner(control: Control) -> void:
+	_corner.add_child(control)
 
 
 func add_action(text: String, primary: bool) -> Button:
@@ -164,6 +172,17 @@ func _build_top_bar() -> void:
 	_coins.offset_right = -MARGIN
 	_coins.offset_top = MARGIN
 	_root.add_child(_coins)
+
+	_corner = HBoxContainer.new()
+	_corner.add_theme_constant_override("separation", 6)
+	_corner.alignment = BoxContainer.ALIGNMENT_END
+	_corner.set_anchors_preset(Control.PRESET_TOP_RIGHT)
+	_corner.grow_horizontal = Control.GROW_DIRECTION_BEGIN
+	_corner.offset_left = -MARGIN
+	_corner.offset_right = -MARGIN
+	_corner.offset_top = MARGIN + CORNER_TOP
+	_corner.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_root.add_child(_corner)
 
 
 func _build_bottom() -> void:

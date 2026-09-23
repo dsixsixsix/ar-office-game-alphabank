@@ -134,7 +134,7 @@ QR_SCAN_HINT,Наведи камеру на QR-код у двери комнат
 QR_WRONG_CODE,Это не тот QR-код,That's not the right QR code
 QR_UNKNOWN_ROOM,Такой комнаты нет на карте,No such room on the map
 QR_GOING_TO_ROOM,Идём: %s,Heading to: %s
-QR_COLLEAGUE_HINT,Это профиль коллеги. Он нужен в задании «Селфи с коллегой»,That's a colleague's profile. Use it in the selfie task
+QR_COLLEAGUE_HINT,Это профиль коллеги. Он нужен в заданиях на знакомство,That's a colleague's profile. It is used in the meet-a-colleague tasks
 QR_ALREADY_CHECKED_IN,Ты уже отметился сегодня,You've already checked in today
 MG_NO_SENSORS,На этом устройстве нет нужных датчиков.,This device lacks the required sensors.
 MG_NO_PERMISSION,Нет доступа к датчикам.,No access to the sensors.
@@ -162,8 +162,6 @@ MG_TWISTER_GOOD,Чисто! Следующая,Clean! Next one
 MG_TWISTER_AGAIN,"Не разобрал, ещё раз","Didn't catch that, try again"
 MG_TWISTER_ERROR,Распознавание не сработало: %s,Recognition failed: %s
 MG_SELFIE_HINT,Встаньте вдвоём перед фронтальной камерой и улыбнитесь,Stand together in front of the selfie camera and smile
-MG_SELFIE_FACES,"Улыбок: %d, лиц: %d","Smiles: %d, faces: %d"
-MG_SELFIE_SCAN,Отсканируй QR-код из профиля коллеги,Scan the QR code from your colleague's profile
 MG_HUNT_HINT,Найди метки на предметах и наведи на них камеру,Find the markers on objects and point the camera at them
 MG_HUNT_COOLER,Кулер,Water cooler
 MG_HUNT_PLANT,Растение,Plant
@@ -184,9 +182,8 @@ ERROR_PRESENCE_REQUIRED,Сначала отметься на ресепшне,Ch
 ERROR_PRESENCE_TOKEN_INVALID,QR-код устарел или недействителен,The QR code has expired or is invalid
 ERROR_PRESENCE_TOKEN_REUSED,Этот QR-код уже использован,This QR code has already been used
 ERROR_COLLEAGUE_INVALID,Неверный профиль коллеги,Invalid colleague profile
-ERROR_COLLEAGUE_ALREADY_USED,С этим коллегой селфи уже было сегодня,You've already taken a selfie with this colleague today
-PROFILE_TITLE,Мой QR,My QR
-PROFILE_HINT,Покажи код коллеге для задания «Селфи с коллегой»,Show this code to a colleague for the selfie task
+ERROR_COLLEAGUE_ALREADY_USED,С этим коллегой сегодня уже было задание,You've already done a task with this colleague today
+PROFILE_TITLE,Профиль,Profile
 OFFICE_SCREEN_HINT,"Отсканируй в игре «Альфа Офис», чтобы отметиться",Scan in Alfa Office to check in
 OFFICE_SCREEN_REFRESH,Код обновится через %d с,New code in %d s
 MG_FIND_OBJECT_HINT,Покажи камере названный предмет и подержи в кадре,Show the named object to the camera and hold it in frame
@@ -202,3 +199,146 @@ OBJ_WHITEBOARD,Маркерная доска,Whiteboard
 OBJ_PAPERS,Бумаги,Papers
 OBJ_GLASSES,Очки,Glasses
 OBJ_BAG,Сумка,Bag
+ROOM_PA_OPEN_SPACE,Опенспейс аналитиков,Analysts' open space
+ROOM_PA_DATA_LAB,Дата-лаб,Data lab
+ROOM_PA_CORRIDOR,Коридор,Corridor
+ROOM_PA_HALL,Лифтовый холл,Lift lobby
+ROOM_PA_COFFEE,Кофе-поинт,Coffee point
+ROOM_PA_WORKSHOP,Переговорная «Гипотеза»,"""Hypothesis"" meeting room"
+FLOOR_HQ,Главный офис,Main office
+FLOOR_ANALYTICS,Продуктовая аналитика,Product analytics
+FLOOR_TITLE,%d этаж · %s,Floor %d · %s
+FLOOR_SHORT,%d эт.,fl. %d
+HUD_HINT_ANALYTICS,Этаж продуктовой аналитики. Здесь задания на знакомство с коллегами из других отделов. Лифт в холле,Product analytics floor. Tasks here are about meeting colleagues from other departments. The lift is in the lobby
+LIFT_QUESTION,Поехать на лифте: %s?,Take the lift: %s?
+LIFT_GO,Поехали,Let's go
+LIFT_STAY,Остаться,Stay
+LIFT_RIDING,Лифт: %s,Lift: %s
+LIFT_TASK_ELSEWHERE,Задание на другом этаже: %s. Идём к лифту,The task is on another floor: %s. Heading to the lift
+DEPT_DIGITAL,Цифровые продукты,Digital products
+DEPT_HR,HR,HR
+DEPT_MANAGEMENT,Руководство,Management
+DEPT_ADMIN,Административный отдел,Administration
+DEPT_DESIGN,Дизайн,Design
+DEPT_PRODUCT_ANALYTICS,Продуктовая аналитика,Product analytics
+MY_QR_TITLE,Мой QR,My QR
+MY_QR_HINT,Покажи код коллеге: он нужен в заданиях на знакомство,Show this code to a colleague: it is used in the meet-a-colleague tasks
+PROFILE_STATUS_EMPTY,Статуса пока нет,No status yet
+PROFILE_STATUS_EDIT,Изменить статус,Edit status
+PROFILE_STATUS_PLACEHOLDER,Что у вас нового?,What's new?
+PROFILE_STATUS_SAVE,Сохранить,Save
+PROFILE_AVATAR,Аватар,Avatar
+PROFILE_AVATAR_UPLOAD,Загрузить своё фото,Upload your photo
+PROFILE_AVATAR_NO_GALLERY,На этом устройстве нельзя выбрать фото из галереи,This device can't pick a photo from the gallery
+PROFILE_AVATAR_CANCELLED,Фото не выбрано,No photo selected
+PROFILE_STREAK,Посещения офиса,Office attendance
+PROFILE_VIEW_STREAK,Серия,Streak
+PROFILE_VIEW_CALENDAR,Календарь,Calendar
+PROFILE_STREAK_DAYS,рабочих дней подряд в офисе,workdays in a row at the office
+PROFILE_STREAK_DETAILS,Лучшая серия: %d · множитель наград ×%s,Best streak: %d · reward multiplier ×%s
+PROFILE_TODAY_PRESENT,Сегодня вы уже отметились в офисе,You've checked in at the office today
+PROFILE_TODAY_CHECK_IN,"Отметься в офисе до 23:59 %s, чтобы серия продолжилась",Check in at the office before 23:59 on %s to keep the streak
+PROFILE_TODAY_WEEKEND,Сегодня выходной: серия в безопасности,It's the weekend: your streak is safe
+CAL_WEEKDAYS,"Пн,Вт,Ср,Чт,Пт,Сб,Вс","Mo,Tu,We,Th,Fr,Sa,Su"
+CAL_MONTHS,"янв,фев,мар,апр,май,июн,июл,авг,сен,окт,ноя,дек","Jan,Feb,Mar,Apr,May,Jun,Jul,Aug,Sep,Oct,Nov,Dec"
+CAL_LEGEND_NONE,нет,none
+CAL_LEGEND_OFFICE,в офисе,office
+CAL_LEGEND_BUSY,3+ задания,3+ tasks
+CAL_DAY_PRESENT,в офисе,at the office
+CAL_DAY_ABSENT,без отметки,no check-in
+PROFILE_TOTAL_DAYS,дней в офисе,office days
+PROFILE_TOTAL_TASKS,заданий,tasks
+PROFILE_TOTAL_COINS,коинов за задания,coins from tasks
+PROFILE_HISTORY,История заданий,Task history
+PROFILE_HISTORY_EMPTY,Заданий пока не было,No tasks yet
+PROFILE_NOTIFICATIONS,Уведомления,Notifications
+PROFILE_NOTIFICATIONS_ON,"Включены: напомним о серии, розыгрыше и новостях","On: reminders about your streak, the draw and news"
+PROFILE_NOTIFICATIONS_OFF,Выключены,Off
+PROFILE_NOTIFICATIONS_ENABLE,Включить уведомления,Turn on notifications
+PROFILE_NOTIFICATIONS_DISABLE,Выключить,Turn off
+PROFILE_NOTIFICATIONS_DENIED,Разрешение не дано. Его можно включить в настройках телефона,Permission denied. You can allow it in the phone settings
+PROFILE_NOTIFICATIONS_UNSUPPORTED,На этом устройстве уведомления пока не поддерживаются,Notifications are not supported on this device yet
+INBOX_TITLE,Уведомления,Notifications
+INBOX_EMPTY,Пока ничего нового,Nothing new yet
+INBOX_PENALTY,"Штраф за пропуски: −%d альфа-коинов. %d раб. дн. подряд без офиса, списано %d%% баланса (%s)","Absence fine: −%d alfa coins. %d workdays in a row without the office, %d%% of the balance taken (%s)"
+INBOX_STREAK_RESET,Серия из %d дн. сгорела: %s вы не отметились в офисе,Your %d-day streak is gone: you didn't check in at the office on %s
+INBOX_PHOTO_REQUEST,"%s сделал(а) с вами совместное фото. Подтвердите, что это правда",%s took a photo with you. Please confirm it really happened
+INBOX_PHOTO_CONFIRMED,%s подтвердил(а) совместное фото: +%d альфа-коинов,%s confirmed your photo: +%d alfa coins
+INBOX_PHOTO_DECLINED,%s не подтвердил(а) фото. Задание снова доступно,%s didn't confirm the photo. The task is open again
+INBOX_RAFFLE_WIN,Вы выиграли розыгрыш: %s! Администратор свяжется с вами,You won the draw: %s! An administrator will contact you
+INBOX_RAFFLE_LOST,"Розыгрыш парковки завершён, победил(а) %s. Повезёт в следующий раз","The parking draw is over, %s won. Better luck next time"
+INBOX_PHOTO_CONFIRM,"Да, это правда","Yes, it's true"
+INBOX_PHOTO_DECLINE,Нет,No
+INBOX_STATE_CONFIRMED,Подтверждено,Confirmed
+INBOX_STATE_DECLINED,Отклонено,Declined
+INBOX_STATE_EXPIRED,Истекло,Expired
+INBOX_STATE_PENDING,Ждёт ответа,Waiting
+NOTIF_TITLE,Альфа Офис,Alfa Office
+NOTIF_STREAK_REMINDER,Серия %d дн. под угрозой: отметься в офисе до %s,Your %d-day streak is at risk: check in at the office before %s
+NOTIF_CHECK_IN_REMINDER,Рабочий день начался: отметься в офисе до %s и начни новую серию,The workday has started: check in at the office before %s and start a new streak
+NOTIF_RAFFLE_DAY,Завтра в %s розыгрыш места на тёплом паркинге,Tomorrow at %s: the warm parking space draw
+NOTIF_RAFFLE_HOUR,Через час розыгрыш места на тёплом паркинге. Итоги в магазине наград,The parking space draw starts in an hour. Results in the reward shop
+INTRO_STREAK_LOST,СЕРИЯ %d ДН. СГОРЕЛА,YOUR %d-DAY STREAK IS GONE
+INTRO_FINED,ШТРАФ ЗА ПРОПУСКИ −%d,ABSENCE FINE −%d
+SHOP_TAB_RAFFLE,РОЗЫГРЫШ,DRAW
+RAFFLE_TITLE,Розыгрыш парковки,Parking draw
+RAFFLE_DRAW_AT,Розыгрыш %s в %s,Draw on %s at %s
+RAFFLE_COUNTDOWN_UNITS,дни : часы : минуты,days : hours : minutes
+RAFFLE_REQUIREMENT,Участвуют самые активные: нужно %d дней в офисе за последние %d дней. У вас: %d,For the most active players: %d office days in the last %d days required. You have %d
+RAFFLE_BUY,Купить билет,Buy a ticket
+RAFFLE_HAS_TICKET,Билет куплен,Ticket bought
+RAFFLE_TICKET_BOUGHT,Билет куплен. Удачи!,Ticket bought. Good luck!
+RAFFLE_RESULTS_TODAY,Сегодня подведены итоги,The results are in today
+RAFFLE_WATCH,Смотреть розыгрыш,Watch the draw
+RAFFLE_WATCH_AGAIN,Посмотреть ещё раз,Watch again
+RAFFLE_WINNER,Победитель: %s,Winner: %s
+RAFFLE_YOU_WON,Вы выиграли место на паркинге!,You won the parking space!
+RAFFLE_NO_ENTRANTS,Участников не было,There were no entrants
+RAFFLE_ENTRANTS,Участников: %d,Entrants: %d
+RAFFLE_FAIRNESS,"Победителя определяет случайное зерно сервера. Его хэш опубликован до розыгрыша, само зерно после, поэтому результат можно проверить","The winner is decided by a random server seed. Its hash is published before the draw and the seed after it, so anyone can check the result"
+RAFFLE_COMMITMENT,Хэш зерна: %s,Seed hash: %s
+RAFFLE_SEED,Зерно: %s,Seed: %s
+RAFFLE_ROULETTE_TITLE,РОЗЫГРЫШ МЕСТА НА ПАРКИНГЕ,PARKING SPACE DRAW
+RAFFLE_CLOSE,Закрыть,Close
+ERROR_RAFFLE_CLOSED,Продажа билетов закрыта,Ticket sales are closed
+ERROR_RAFFLE_ALREADY_JOINED,У вас уже есть билет,You already have a ticket
+ERROR_RAFFLE_NOT_ELIGIBLE,Пока мало дней в офисе для участия,Not enough office days to take part yet
+ERROR_PENDING_CONFIRMATION,Ждём подтверждения от коллеги,Waiting for your colleague to confirm
+ERROR_COLLEAGUE_NOT_ASSIGNED,"Это не тот коллега, которого выбрала игра",That's not the colleague the game picked
+ERROR_COLLEAGUE_NOT_PRESENT,Коллега сегодня не отмечался в офисе,The colleague hasn't checked in at the office today
+ERROR_NOT_ENOUGH_FACES,В кадре должно быть двое,Two people must be in the frame
+ERROR_NO_COLLEAGUE_AVAILABLE,Сейчас в офисе нет свободных коллег. Попробуй позже,No colleagues are available at the office right now. Try later
+ERROR_SAME_DEPARTMENT,Нужен коллега из другого департамента,You need a colleague from another department
+ERROR_SAME_DEPARTMENT_TWICE,"Этот департамент уже есть, нужен другой","That department is already on the card, find another one"
+ERROR_NOT_ENOUGH_COLLEAGUES,Нужно больше коллег,More colleagues needed
+ERROR_OUTSIDE_TIME_WINDOW,Это задание можно выполнить только в обед,This task can only be done at lunchtime
+ERROR_STATUS_TOO_LONG,Статус слишком длинный,The status is too long
+ERROR_UNKNOWN_AVATAR,Такого аватара нет,No such avatar
+ERROR_AVATAR_MISSING,Сначала загрузите фото,Upload a photo first
+ERROR_AVATAR_TOO_BIG,Фото слишком большое,The photo is too big
+ERROR_AVATAR_INVALID,Не удалось прочитать фото,Couldn't read the photo
+ERROR_UNKNOWN_REQUEST,Запрос не найден,Request not found
+ERROR_REQUEST_CLOSED,На этот запрос уже ответили,This request has already been answered
+TASK_PENDING,Ждёт,Waiting
+PHOTO_SENT,"Фото отправлено: ждём, когда %s подтвердит",Photo sent: waiting for %s to confirm
+MG_PHOTO_FIND,"Игра выбрала коллегу, который сейчас в офисе. Найдите друг друга",The game picked a colleague who is at the office now. Find each other
+MG_PHOTO_CONFIRM_NOTE,"После снимка коллеге придёт запрос, и он подтвердит, что фото правда было. Снимок никуда не сохраняется",After the shot your colleague gets a request to confirm the photo really happened. The picture is not saved anywhere
+MG_PHOTO_START,"Мы вместе, открыть камеру","We're together, open the camera"
+MG_PHOTO_FACES,Лиц в кадре: %d из %d,Faces in the frame: %d of %d
+MG_MEET_FIND,Найди этого коллегу. Вопросы ниже помогут начать разговор,Find this colleague. The questions below help to start talking
+MG_MEET_ANYONE,"Подойдёт любой коллега из другого департамента, который сейчас в офисе",Any colleague from another department who is at the office now will do
+MG_MEET_TOPIC,ВОПРОС ДЛЯ РАЗГОВОРА,CONVERSATION STARTER
+MG_MEET_NEXT_TOPIC,Другой вопрос,Another question
+MG_MEET_START,Мы встретились,We've met
+MG_MEET_TALKING,Разговор: %s,Talking: %s
+MG_MEET_SCAN_BUTTON,Отсканировать «Мой QR» коллеги,"Scan the colleague's ""My QR"""
+MG_MEET_SCAN,Попроси коллегу открыть «Мой QR» в игре и отсканируй код,"Ask your colleague to open ""My QR"" in the game and scan it"
+MG_MEET_WRONG_PERSON,Это не %s. Найди нужного коллегу,That's not %s. Find the right colleague
+MG_MEET_OWN_CODE,Это твой собственный код,That's your own code
+MG_TIME_LEFT,Осталось: %s,Left: %s
+MG_BINGO_HINT,"Познакомься с %d коллегами из разных департаментов, кроме своего, и отсканируй их «Мой QR»","Meet %d colleagues from different departments other than yours and scan their ""My QR"""
+MG_BINGO_SCAN_BUTTON,Отсканировать коллегу,Scan a colleague
+MG_BINGO_SCAN,Коллега №%d: отсканируй его «Мой QR»,"Colleague #%d: scan their ""My QR"""
+MG_BINGO_SLOT,Коллега №%d: ?,Colleague #%d: ?
+MG_BINGO_ALREADY,Этот коллега уже в карточке,This colleague is already on the card
+COLLEAGUE_USUALLY_AT,Обычно: %s,Usually at: %s

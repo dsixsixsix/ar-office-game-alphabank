@@ -1,6 +1,6 @@
 class_name NpcRoster
 extends RefCounted
-## Prototype NPC placement and routines. Dialogue text lives in res://data/dialogues.json.
+## Prototype NPC placement and routines per floor. Dialogue text lives in res://data/dialogues.json.
 
 
 class Activity:
@@ -30,6 +30,37 @@ class Definition:
 		activities = p_activities
 
 
+static func for_floor(floor_id: StringName) -> Array[Definition]:
+	return analytics() if floor_id == OfficeFloors.ANALYTICS else all()
+
+
+## Product analytics floor.
+static func analytics() -> Array[Definition]:
+	return [
+		Definition.new("masha", "Маша (A/B-тесты)", [
+			Activity.new(Vector2i(2, 6), NpcAction.Kind.TYPING, Vector2.UP),
+			Activity.new(Vector2i(15, 19), NpcAction.Kind.COFFEE, Vector2.UP),
+			Activity.new(Vector2i(30, 19), NpcAction.Kind.PAPERS, Vector2.UP),
+		]),
+		Definition.new("timur", "Тимур (data science)", [
+			Activity.new(Vector2i(32, 3), NpcAction.Kind.TYPING, Vector2.UP),
+			Activity.new(Vector2i(6, 9), NpcAction.Kind.TYPING, Vector2.UP),
+			Activity.new(Vector2i(24, 14), NpcAction.Kind.PHONE, Vector2.DOWN),
+		]),
+		Definition.new("vera", "Вера Андреевна (руководитель)", [
+			Activity.new(Vector2i(38, 19), NpcAction.Kind.PAPERS, Vector2.UP),
+			Activity.new(Vector2i(34, 8), NpcAction.Kind.PAPERS, Vector2.UP),
+			Activity.new(Vector2i(8, 19), NpcAction.Kind.PHONE, Vector2.DOWN),
+		]),
+		Definition.new("kostya", "Костя (SQL)", [
+			Activity.new(Vector2i(18, 6), NpcAction.Kind.TYPING, Vector2.UP),
+			Activity.new(Vector2i(17, 19), NpcAction.Kind.COFFEE, Vector2.UP),
+			Activity.new(Vector2i(39, 9), NpcAction.Kind.DRINK, Vector2.RIGHT),
+		]),
+	]
+
+
+## Main floor.
 static func all() -> Array[Definition]:
 	return [
 		Definition.new("anna", "Аня", [

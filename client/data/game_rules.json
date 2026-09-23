@@ -1,0 +1,31 @@
+{
+	"_comment": "Mock server settings; on the real server they come from the admin panel via Nakama storage. attendance.fine_tiers: the n-th workday missed in a row costs `percent` of the balance, rounded up, never below zero; the first missed day only breaks the streak. photo: coins the partner gets for confirming a joint photo, and how the mock simulates the other phone. raffle: parking draw on the last Friday of every month.",
+	"attendance": {
+		"fine_tiers": [
+			{"days": 2, "percent": 3},
+			{"days": 3, "percent": 5},
+			{"days": 5, "percent": 10},
+			{"days": 10, "percent": 15}
+		],
+		"max_catch_up_days": 60
+	},
+	"notifications": {
+		"reminder_times": ["09:30", "14:00", "18:30"],
+		"fun_window": ["11:00", "19:30"],
+		"fun_max": 2
+	},
+	"photo": {
+		"partner_bonus": 10,
+		"mock_confirm_seconds": 20,
+		"mock_incoming_after_seconds": 90
+	},
+	"raffle": {
+		"prize_name": "Место на тёплом паркинге",
+		"prize_description": "Крытый тёплый паркинг под офисом на весь следующий месяц.",
+		"ticket_price": 1500,
+		"min_office_days": 8,
+		"window_days": 30,
+		"draw_hour": 18,
+		"draw_minute": 0
+	}
+}

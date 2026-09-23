@@ -14,6 +14,7 @@ var _pending_use: HomeLayout.Interactable
 var _near_id: String = ""
 var _busy: bool = false
 var _leaving: bool = false
+var _corner: PlayerCorner
 
 @onready var _dialogue: DialogueBox = $DialogueBox
 @onready var _wardrobe: WardrobePanel = $WardrobePanel
@@ -35,6 +36,7 @@ func _ready() -> void:
 	_cooldowns["table"] = REMARK_COOLDOWN
 	_hud.set_title(tr("HUD_HOME_TITLE"))
 	_hud.set_hint(tr("HUD_HOME_HINT"))
+	_corner = PlayerCorner.attach(self, _hud)
 	_player.face(Vector2.UP)
 	_fade.color.a = 1.0
 	if Backend.profile == null:
@@ -54,7 +56,10 @@ func _process(delta: float) -> void:
 
 
 func _is_modal_open() -> bool:
-	return _busy or _leaving or _dialogue.is_open() or _wardrobe.is_open() or _shop_panel.is_open() or _choice.is_open()
+	return (
+		_busy or _leaving or _dialogue.is_open() or _wardrobe.is_open() or _shop_panel.is_open() or _choice.is_open()
+		or (_corner != null and _corner.is_open())
+	)
 
 
 func _on_tap(world_position: Vector2) -> void:

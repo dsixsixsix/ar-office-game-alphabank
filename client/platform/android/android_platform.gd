@@ -1,6 +1,7 @@
 extends PlatformBackend
 ## Android implementation. Wraps the "OfficeGameAndroid" plugin (native/android): step counter,
-## CameraX frames with ML Kit / OpenCV detectors, and SpeechRecognizer.
+## CameraX frames with ML Kit / OpenCV detectors, SpeechRecognizer and local notifications
+## (AlarmManager). The gallery picker is Godot's native file dialog.
 
 const SINGLETON: String = "OfficeGameAndroid"
 const PERMISSION_TIMEOUT: float = 30.0
@@ -14,6 +15,7 @@ const PERMISSIONS: Dictionary[PlatformBackend.Feature, String] = {
 	Feature.OBJECT_RECOGNITION: "android.permission.CAMERA",
 	Feature.MICROPHONE: "android.permission.RECORD_AUDIO",
 	Feature.SPEECH_RECOGNITION: "android.permission.RECORD_AUDIO",
+	Feature.NOTIFICATIONS: "android.permission.POST_NOTIFICATIONS",
 }
 const FEATURE_NAMES: Dictionary[PlatformBackend.Feature, String] = {
 	Feature.PEDOMETER: "pedometer",
@@ -24,6 +26,7 @@ const FEATURE_NAMES: Dictionary[PlatformBackend.Feature, String] = {
 	Feature.MARKER_DETECTION: "markers",
 	Feature.OBJECT_RECOGNITION: "labels",
 	Feature.SPEECH_RECOGNITION: "speech",
+	Feature.NOTIFICATIONS: "notifications",
 }
 const CAMERA_MODE_NAMES: Dictionary[PlatformBackend.CameraMode, String] = {
 	CameraMode.PREVIEW: "preview",
@@ -64,6 +67,9 @@ func request_access(features: Array[PlatformBackend.Feature]) -> bool:
 	for feature: PlatformBackend.Feature in features:
 		var permission: String = PERMISSIONS.get(feature, "")
 		if permission.is_empty() or pending.has(permission) or OS.get_granted_permissions().has(permission):
+			continue
+		# Android 12 and older show notifications without a runtime permission.
+		if feature == Feature.NOTIFICATIONS and (_plugin == null or not bool(_plugin.call("needsNotificationPermission"))):
 			continue
 		pending.append(permission)
 	for permission: String in pending:
@@ -119,6 +125,16 @@ func start_speech(locale: String) -> void:
 func stop_speech() -> void:
 	if _plugin != null:
 		_plugin.call("stopSpeech")
+
+
+func schedule_notification(id: int, title: String, body: String, delay_seconds: int) -> void:
+	if _plugin != null:
+		_plugin.call("scheduleNotification", id, title, body, delay_seconds)
+
+
+func cancel_all_notifications() -> void:
+	if _plugin != null:
+		_plugin.call("cancelAllNotifications")
 
 
 func _on_camera_frame(width: int, height: int, rgb: PackedByteArray) -> void:

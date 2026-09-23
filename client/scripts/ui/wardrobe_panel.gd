@@ -10,6 +10,8 @@ const MARGIN: float = 8.0
 const COLUMNS: int = 4
 const FRAME_TIME: float = 0.14
 const PREVIEW_SCALE: int = 2
+## Room kept for the item list's vertical scroll bar, so the grid never pushes the panel wider.
+const SCROLL_BAR_ALLOWANCE: float = 14.0
 ## Directions the arrow buttons cycle through, starting from the front.
 const PREVIEW_ROWS: Array[int] = [CharacterPainter.Dir.DOWN, CharacterPainter.Dir.SIDE, CharacterPainter.Dir.UP]
 const PALETTES: Dictionary[String, Array] = {
@@ -25,6 +27,9 @@ var _slot: String = "top"
 var _busy: bool = false
 
 var _panel: PanelContainer
+## Panel size fixed at open() from the safe area; item cells are sized from it, never from the
+## live panel size (which would grow with its content on every tab switch).
+var _panel_size: Vector2 = Vector2.ZERO
 var _preview: TextureRect
 var _preview_atlas: AtlasTexture
 var _preview_row_index: int = 0
@@ -117,10 +122,11 @@ func is_open() -> bool:
 
 func open() -> void:
 	var safe: Rect2 = PlatformServices.get_safe_rect()
+	_panel_size = safe.size - Vector2(MARGIN, MARGIN) * 2.0
 	_panel.position = safe.position + Vector2(MARGIN, MARGIN)
-	_panel.size = safe.size - Vector2(MARGIN, MARGIN) * 2.0
-	_panel.custom_minimum_size = _panel.size
-	_toast.custom_minimum_size = Vector2(_panel.size.x - 24.0, 0)
+	_panel.custom_minimum_size = _panel_size
+	_panel.size = _panel_size
+	_toast.custom_minimum_size = Vector2(_panel_size.x - 24.0, 0)
 	_preview_row_index = 0
 	visible = true
 	_busy = true
@@ -210,7 +216,8 @@ func _refresh_items() -> void:
 		child.queue_free()
 	if _state == null:
 		return
-	var cell_width: float = floorf((_panel.size.x - 20.0 - (COLUMNS - 1) * 4.0) / COLUMNS)
+	var inner_width: float = _panel_size.x - 16.0 - SCROLL_BAR_ALLOWANCE
+	var cell_width: float = floorf((inner_width - (COLUMNS - 1) * 4.0) / COLUMNS)
 	for item: BackendModels.WardrobeItem in _state.items:
 		if item.slot == _slot:
 			_grid.add_child(_make_item_button(item, cell_width))

@@ -64,9 +64,12 @@ func test_score_bonus_is_capped() -> void:
 	assert_int(result.reward).is_equal(roundi(base * (1.0 + MockBackend.MAX_SCORE_BONUS)))
 
 
-func test_selfie_needs_another_person() -> void:
+func test_check_in_marks_the_calendar() -> void:
 	var backend: MockBackend = _backend()
+	assert_bool(backend.login().present_today).is_false()
 	backend.complete_task("check_in", true, "k1", {"presence_token": _token()})
-	assert_str(backend.complete_task("selfie", true, "k2", {"colleague_id": MockBackend.PLAYER_ID}).error).is_equal("colleague_invalid")
-	assert_str(backend.complete_task("selfie", true, "k3", {"colleague_id": "bad id!"}).error).is_equal("colleague_invalid")
-	assert_bool(backend.complete_task("selfie", true, "k4", {"colleague_id": "colleague-anna"}).ok).is_true()
+	var page: BackendModels.ProfilePage = backend.account.get_profile_page()
+	assert_bool(page.profile.present_today).is_true()
+	assert_int(page.profile.streak_days).is_equal(1)
+	assert_bool(page.days[page.days.size() - 1].present).is_true()
+	assert_int(page.days[page.days.size() - 1].tasks.size()).is_equal(1)

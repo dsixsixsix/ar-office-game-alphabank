@@ -16,6 +16,7 @@ DeviceEmulator="*res://platform/emulator/device_emulator.gd"
 Backend="*res://scripts/services/backend.gd"
 Appearance="*res://scripts/services/appearance.gd"
 Presence="*res://scripts/services/presence.gd"
+Notifications="*res://scripts/services/notifications.gd"
 
 [audio]
 

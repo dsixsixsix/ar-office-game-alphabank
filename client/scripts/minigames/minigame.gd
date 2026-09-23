@@ -23,8 +23,10 @@ const REQUIRED_FEATURES: Dictionary[String, Array] = {
 	"squats": [PlatformBackend.Feature.POSE_DETECTION],
 	"sing_note": [PlatformBackend.Feature.MICROPHONE],
 	"tongue_twister": [PlatformBackend.Feature.SPEECH_RECOGNITION],
-	"selfie": [PlatformBackend.Feature.FACE_DETECTION, PlatformBackend.Feature.QR_SCAN],
+	"selfie": [PlatformBackend.Feature.FACE_DETECTION],
 	"scavenger_hunt": [PlatformBackend.Feature.MARKER_DETECTION],
+	"meet_colleague": [PlatformBackend.Feature.QR_SCAN],
+	"colleague_bingo": [PlatformBackend.Feature.QR_SCAN],
 }
 
 var task: BackendModels.TaskInfo
@@ -32,6 +34,8 @@ var task: BackendModels.TaskInfo
 var shows_result: bool = true
 ## Evidence and score sent to the server with the result. The server decides what it is worth.
 var proof: Dictionary = {}
+## Data the server prepared for this run, e.g. {"colleague": BackendModels.Colleague}.
+var context: Dictionary = {}
 
 var _is_done: bool = false
 var _qr_kind: QrPayload.Kind = QrPayload.Kind.UNKNOWN
@@ -210,6 +214,10 @@ static func create(kind: String) -> Minigame:
 			return SelfieMinigame.new()
 		"scavenger_hunt":
 			return ScavengerHuntMinigame.new()
+		"meet_colleague":
+			return MeetColleagueMinigame.new()
+		"colleague_bingo":
+			return ColleagueBingoMinigame.new()
 		# Screen-only fallbacks from the first prototype.
 		"coffee":
 			return CoffeeMinigame.new()

@@ -51,6 +51,27 @@ static func all() -> Dictionary[String, Dictionary]:
 			"skin": 3, "hair": "bun", "hair_color": "#141012", "mask": "cat", "mask_color": "#d81f4a",
 			"top": "tee", "top_color": "#1f1f24", "pants_color": "#e8e0d0", "shoes_color": "#d81f4a",
 		}),
+		# Product analytics floor.
+		"masha": with_defaults({
+			"skin": 0, "hair": "ponytail", "hair_color": "#c2562a", "glasses": true,
+			"top": "tee", "top_color": "#2fb3a6", "pants_color": "#2c3a55",
+			"shoes_color": "#f0f0f0", "shoes_style": "sneakers", "badge": true, "hand": "laptop",
+		}),
+		"timur": with_defaults({
+			"skin": 2, "hair": "curly", "hair_color": "#1a1412", "beard": true,
+			"top": "hoodie", "top_color": "#2b2f38", "pants_color": "#3a3a44",
+			"shoes_color": "#f0f0f0", "shoes_style": "sneakers", "headphones": true,
+		}),
+		"vera": with_defaults({
+			"skin": 1, "hair": "bun", "hair_color": "#3b2a20", "glasses": true,
+			"top": "jacket", "top_color": "#3c6f73", "inner_color": "#fbfaf8",
+			"pants_color": "#23232a", "bottom": "skirt", "shoes_color": "#23232a", "badge": true,
+		}),
+		"kostya": with_defaults({
+			"skin": 3, "hair": "short", "hair_color": "#141012",
+			"top": "shirt", "top_color": "#8fd6ff", "pants_color": "#c7b08c",
+			"shoes_color": "#6b3a2a", "hand": "alfa_coffee",
+		}),
 	}
 
 

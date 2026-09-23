@@ -17,6 +17,8 @@ signal labels_detected(labels: Array[SensorModels.ObjectLabel])
 signal qr_detected(text: String)
 signal speech_recognized(text: String, is_final: bool)
 signal speech_failed(error: String)
+## Desktop emulation only: a scheduled notification "arrived" while the game is open.
+signal notification_shown(title: String, body: String)
 
 const ANDROID_SCRIPT: String = "res://platform/android/android_platform.gd"
 const WEB_SCRIPT: String = "res://platform/web/web_platform.gd"
@@ -42,6 +44,7 @@ func _ready() -> void:
 	_backend.qr_detected.connect(qr_detected.emit)
 	_backend.speech_recognized.connect(speech_recognized.emit)
 	_backend.speech_failed.connect(speech_failed.emit)
+	_backend.notification_shown.connect(notification_shown.emit)
 	_microphone = MicrophoneCapture.new()
 	add_child(_microphone)
 
@@ -141,6 +144,24 @@ func stop_all() -> void:
 	stop_camera()
 	stop_microphone()
 	stop_speech()
+
+
+# --- Notifications and gallery ---------------------------------------------------
+
+
+## Replaces every scheduled local notification with `items`:
+## [{"id": int, "title": String, "body": String, "delay": seconds from now}]. An empty list cancels
+## them all. Ask for Feature.NOTIFICATIONS with request_access() first.
+func replace_notifications(items: Array[Dictionary]) -> void:
+	_backend.cancel_all_notifications()
+	for item: Dictionary in items:
+		_backend.schedule_notification(int(item["id"]), str(item["title"]), str(item["body"]), maxi(0, int(item["delay"])))
+
+
+## Opens the gallery (or a file dialog). Resolves to null when cancelled or unsupported.
+func pick_image() -> Image:
+	@warning_ignore("redundant_await")
+	return await _backend.pick_image()
 
 
 # --- Screen ----------------------------------------------------------------------

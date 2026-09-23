@@ -45,6 +45,8 @@ func _start() -> void:
 	await _commute_tour()
 	await _office_tour()
 	await _evening_tour()
+	await _social_tour()
+	await _analytics_tour()
 	await _office_screen_tour()
 	if FileAccess.file_exists(BACKUP):
 		DirAccess.copy_absolute(ProjectSettings.globalize_path(BACKUP), ProjectSettings.globalize_path(SAVE))
@@ -120,7 +122,7 @@ func _commute_tour() -> void:
 	await _shot("c3_traffic")
 	await _wait(4.5)
 	await _shot("c4_arrival")
-	(Backend.get("_impl") as MockBackend).call("_credit", 6000, "dev_tour", "tour")
+	Backend.get_mock().store.credit(6000, "dev_tour", "tour")
 	var result: BackendModels.PurchaseResult = await Backend.buy_car("audi_rs6")
 	if result.status == BackendModels.PurchaseResult.Status.GRANTED:
 		await Backend.select_car("audi_rs6")
@@ -167,7 +169,7 @@ func _office_tour() -> void:
 	(office.get("_task_panel") as TaskPanel).close_panel()
 	# Close every task on the mock server so the "Go home" button appears.
 	# Check-in goes first: the server accepts other tasks only after a valid presence token.
-	var mock: MockBackend = Backend.get("_impl")
+	var mock: MockBackend = Backend.get_mock()
 	var token: String = QrPayload.parse(DevQrCodes.current_presence_code()).value
 	mock.complete_task("check_in", true, "tour-check-in-%d" % Time.get_ticks_usec(), {"presence_token": token})
 	for task: BackendModels.TaskInfo in office.get("_tasks"):
@@ -200,6 +202,8 @@ func _minigame_tour(office: Node) -> void:
 	}
 	var index: int = 0
 	for task: BackendModels.TaskInfo in office.get("_tasks"):
+		if task.floor_id != OfficeFloors.current or not task.assignment.is_empty():
+			continue
 		index += 1
 		await _teleport(office, task.spot)
 		office.call("_go_to_task", task)
@@ -228,6 +232,135 @@ func _minigame_tour(office: Node) -> void:
 	await _shot("g_profile_qr")
 	panel.emit_signal("_resolved", MinigamePanel.Outcome.CANCELLED)
 	await _wait(0.5)
+
+
+## Photo with a colleague, inbox, profile and the parking draw on a fresh office day.
+func _social_tour() -> void:
+	OfficeFloors.reset()
+	var mock: MockBackend = Backend.get_mock()
+	var today: String = str(mock.store.today())
+	(mock.store.state["skipped"] as Dictionary)[today] = []
+	var token: String = QrPayload.parse(DevQrCodes.current_presence_code()).value
+	mock.complete_task("check_in", true, "tour-social-%d" % Time.get_ticks_usec(), {"presence_token": token})
+	get_tree().change_scene_to_file("res://scenes/main.tscn")
+	await _wait(2.5)
+	var office: Node = get_tree().current_scene
+	var desktop: Node = PlatformServices.get_node("Backend")
+	var panel: MinigamePanel = office.get("_minigame_panel")
+	await _teleport(office, (office.get("_map") as WorldMap).layout.elevator_cell)
+	await _wait(0.6)
+	await _shot("s1_lift")
+	for task: BackendModels.TaskInfo in office.get("_tasks"):
+		if task.id != "selfie":
+			continue
+		await _teleport(office, task.spot)
+		office.call("_go_to_task", task)
+		await _wait(1.2)
+		await _shot("s2_photo_partner")
+		desktop.set("face_count", 2)
+		desktop.set("smiling", true)
+		(panel.get("_game") as Minigame).call("_start_camera")
+		await _wait(0.6)
+		await _shot("s3_photo_camera")
+		await _wait(2.6)
+		await _shot("s4_photo_sent")
+	desktop.set("face_count", 0)
+	mock.social.dev_incoming_photo_request()
+	Notifications.poll()
+	await _wait(1.2)
+	await _shot("s5_banner")
+	var corner: PlayerCorner = office.get("_corner")
+	corner.open_inbox()
+	await _wait(1.2)
+	await _shot("s6_inbox")
+	(office.get_node("InboxPanel") as ModalPanel).close_panel()
+	corner.open_profile()
+	await _wait(1.2)
+	await _shot("s7_profile")
+	var profile: ProfilePanel = office.get_node("ProfilePanel")
+	(profile.get("_scroll") as ScrollContainer).scroll_vertical = 330
+	await _wait(0.4)
+	await _shot("s8_profile_streak")
+	profile.set("_show_calendar", true)
+	await profile.call("_reload")
+	(profile.get("_scroll") as ScrollContainer).scroll_vertical = 330
+	await _wait(0.6)
+	await _shot("s9_profile_calendar")
+	(profile.get("_scroll") as ScrollContainer).scroll_vertical = 700
+	await _wait(0.4)
+	await _shot("s10_profile_history")
+	profile.close_panel()
+	await _raffle_tour(office, mock)
+
+
+func _raffle_tour(office: Node, mock: MockBackend) -> void:
+	var today: int = mock.store.today()
+	for day: int in 10:
+		(mock.store.state["presence_days"] as Dictionary)[str(today - day)] = true
+	mock.store.credit(3000, "dev_tour", "tour")
+	mock.raffle.dev_schedule(2 * 86400 + 5 * 3600 + 17 * 60)
+	office.call("_open_shop")
+	var shop: ShopPanel = office.get("_shop_panel")
+	await _wait(0.5)
+	await shop.call("_select_tab", ShopPanel.Tab.RAFFLE)
+	await _wait(0.6)
+	await _shot("r1_raffle")
+	await shop.call("_on_buy_ticket")
+	await _wait(0.6)
+	await _shot("r2_raffle_ticket")
+	var state: BackendModels.RaffleState = await Backend.raffle.get_raffle()
+	((mock.store.state["raffles"] as Dictionary)[state.draw_id] as Dictionary)["draw_at"] = mock.store.now() - 1
+	await shop.call("_reload")
+	await _wait(0.6)
+	await _shot("r3_raffle_results")
+	state = await Backend.raffle.get_raffle()
+	shop.call("_watch_draw", state)
+	await _wait(2.0)
+	await _shot("r4_roulette_spin")
+	await _wait(6.0)
+	await _shot("r5_roulette_winner")
+	for child: Node in shop.get_children():
+		if child is RaffleRoulette:
+			child.emit_signal("finished")
+			child.queue_free()
+	await _wait(0.8)
+	shop.visible = false
+	mock.store.state["dev_raffle_at"] = 0
+
+
+## The product analytics floor: rooms, NPCs and the meet-a-colleague tasks.
+func _analytics_tour() -> void:
+	get_tree().current_scene.call("_travel", OfficeFloors.ANALYTICS)
+	await _wait(2.8)
+	var office: Node = get_tree().current_scene
+	await _shot("a1_lift_hall")
+	for entry: Array in [[Vector2i(12, 9), "a2_open_space"], [Vector2i(36, 9), "a3_data_lab"], [Vector2i(22, 22), "a4_coffee"], [Vector2i(37, 21), "a5_workshop"]]:
+		await _teleport(office, entry[0])
+		await _wait(0.8)
+		await _shot(str(entry[1]))
+	office.call("_open_tasks")
+	await _wait(1.0)
+	await _shot("a6_tasks")
+	(office.get("_task_panel") as TaskPanel).close_panel()
+	var panel: MinigamePanel = office.get("_minigame_panel")
+	for task: BackendModels.TaskInfo in office.get("_tasks"):
+		if task.floor_id != OfficeFloors.ANALYTICS or task.minigame == "meet_colleague" and task.assignment.is_empty():
+			continue
+		await _teleport(office, task.spot)
+		office.call("_go_to_task", task)
+		await _wait(1.4)
+		await _shot("a7_%s" % task.id)
+		if panel.is_open():
+			panel.emit_signal("_resolved", MinigamePanel.Outcome.CANCELLED)
+		await _wait(0.5)
+	for child: Node in (office.get("_entities") as Node).get_children():
+		var npc: Npc = child as Npc
+		if npc != null and npc.definition.id == "masha":
+			await _teleport(office, (office.get("_map") as WorldMap).world_to_cell(npc.global_position) + Vector2i(0, 1))
+			office.call("_approach", npc)
+	await _wait(2.0)
+	await _shot("a8_talk_masha")
+	OfficeFloors.reset()
 
 
 func _evening_tour() -> void:

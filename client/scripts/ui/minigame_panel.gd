@@ -89,13 +89,15 @@ func is_open() -> bool:
 	return visible
 
 
-func run(task: BackendModels.TaskInfo) -> Outcome:
+## `context` carries what the server prepared for the run, e.g. the assigned colleague.
+func run(task: BackendModels.TaskInfo, context: Dictionary = {}) -> Outcome:
 	last_proof = {}
 	var kind: String = await _pick_minigame(task)
 	if kind.is_empty():
 		return Outcome.UNAVAILABLE
 	var game: Minigame = Minigame.create(kind)
 	game.task = task
+	game.context = context
 	return await _play(game, task.title, task.difficulty, task.difficulty_multiplier, task.skippable)
 
 

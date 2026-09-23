@@ -3,6 +3,7 @@ package ru.alfaoffice.game.android
 import android.content.pm.PackageManager
 import android.hardware.Sensor
 import android.hardware.SensorManager
+import android.os.Build
 import android.speech.SpeechRecognizer
 import android.util.Log
 import org.godotengine.godot.Godot
@@ -12,8 +13,8 @@ import org.godotengine.godot.plugin.UsedByGodot
 
 /**
  * Godot Android plugin (v2) behind PlatformServices: step counter, camera frames with ML Kit /
- * OpenCV detectors, and the system speech recognizer. Every result goes back to GDScript as a
- * signal; frames and audio never leave the device.
+ * OpenCV detectors, the system speech recognizer and local notifications. Every result goes back
+ * to GDScript as a signal; frames and audio never leave the device.
  */
 class OfficeGamePlugin(godot: Godot) : GodotPlugin(godot) {
 
@@ -49,8 +50,25 @@ class OfficeGamePlugin(godot: Godot) : GodotPlugin(godot) {
             "camera", "qr", "pose", "faces", "markers", "labels" ->
                 packages.hasSystemFeature(PackageManager.FEATURE_CAMERA_ANY)
             "speech" -> SpeechRecognizer.isRecognitionAvailable(context)
+            "notifications" -> true
             else -> false
         }
+    }
+
+    /** Android 13+ asks the player before an app may post notifications. */
+    @UsedByGodot
+    fun needsNotificationPermission(): Boolean = Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
+
+    @UsedByGodot
+    fun scheduleNotification(id: Int, title: String, body: String, delaySeconds: Int) {
+        val context = activity ?: return
+        LocalNotifications.schedule(context.applicationContext, id, title, body, delaySeconds)
+    }
+
+    @UsedByGodot
+    fun cancelAllNotifications() {
+        val context = activity ?: return
+        LocalNotifications.cancelAll(context.applicationContext)
     }
 
     @UsedByGodot

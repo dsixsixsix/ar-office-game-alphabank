@@ -9,8 +9,6 @@ signal skip_requested(task: BackendModels.TaskInfo)
 const COIN_SHEET: Texture2D = preload("res://assets/ui/alfa_coin.png")
 const SIDE_MARGIN: float = 12.0
 
-var layout: MapLayout
-
 var _panel: PanelContainer
 var _subtitle: Label
 var _scroll: ScrollContainer
@@ -122,7 +120,10 @@ func _make_row(task: BackendModels.TaskInfo, at_spot: bool, width: float) -> Con
 	var footer: HBoxContainer = HBoxContainer.new()
 	footer.add_theme_constant_override("separation", 6)
 	column.add_child(footer)
-	var room: Label = UiStyle.make_label("▸ " + tr(_room_key(task.room)), 9, UiStyle.RED)
+	var place: String = tr(_room_key(task.room))
+	if task.floor_id != OfficeFloors.current:
+		place += " · " + tr("FLOOR_SHORT") % OfficeFloors.NUMBERS.get(task.floor_id, 0)
+	var room: Label = UiStyle.make_label("▸ " + place, 9, UiStyle.RED)
 	room.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	room.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	footer.add_child(room)
@@ -139,7 +140,8 @@ func _make_row(task: BackendModels.TaskInfo, at_spot: bool, width: float) -> Con
 
 	var button: Button
 	if closed:
-		button = UiStyle.make_button(tr("TASK_DONE") if task.completed else tr("TASK_SKIPPED"), false, 12)
+		var state_key: String = "TASK_DONE" if task.completed else ("TASK_PENDING" if task.pending else "TASK_SKIPPED")
+		button = UiStyle.make_button(tr(state_key), false, 12)
 		button.disabled = true
 	else:
 		button = UiStyle.make_button(tr("TASK_START") if at_spot else tr("TASK_GO"), true, 12)
@@ -150,11 +152,8 @@ func _make_row(task: BackendModels.TaskInfo, at_spot: bool, width: float) -> Con
 
 
 func _room_key(room_id: StringName) -> String:
-	if layout != null:
-		var room: MapLayout.Room = layout.find_room(room_id)
-		if room != null:
-			return room.name_key
-	return String(room_id)
+	var room: MapLayout.Room = OfficeFloors.find_room(room_id)
+	return room.name_key if room != null else String(room_id)
 
 
 func _on_dimmer_input(event: InputEvent) -> void:

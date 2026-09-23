@@ -34,6 +34,9 @@ var _frame_left: float = 0.0
 var _speech_running: bool = false
 var _jerk: Vector3 = Vector3.ZERO
 var _emulator: SensorEmulator
+## Notification id -> ticket of its latest schedule call; a stale ticket means it was replaced or cancelled.
+var _notifications: Dictionary[int, int] = {}
+var _notification_ticket: int = 0
 
 
 func _ready() -> void:
@@ -96,6 +99,21 @@ func start_speech(_locale: String) -> void:
 func stop_speech() -> void:
 	_speech_running = false
 	_emulator.refresh()
+
+
+## Notifications "arrive" as an in-game banner while the game runs; nothing reaches the desktop.
+func schedule_notification(id: int, title: String, body: String, delay_seconds: int) -> void:
+	_notification_ticket += 1
+	var ticket: int = _notification_ticket
+	_notifications[id] = ticket
+	await get_tree().create_timer(delay_seconds).timeout
+	if _notifications.get(id, -1) == ticket:
+		_notifications.erase(id)
+		notification_shown.emit(title, body)
+
+
+func cancel_all_notifications() -> void:
+	_notifications.clear()
 
 
 func is_steps_running() -> bool:

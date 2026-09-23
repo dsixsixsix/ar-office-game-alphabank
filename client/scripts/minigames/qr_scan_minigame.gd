@@ -17,7 +17,7 @@ func _ready() -> void:
 
 
 func _add_profile_button() -> void:
-	var toggle: Button = UiStyle.make_button(tr("PROFILE_TITLE"), false, 12)
+	var toggle: Button = UiStyle.make_button(tr("MY_QR_TITLE"), false, 12)
 	toggle.custom_minimum_size = Vector2(120, 30)
 	toggle.position = Vector2((AREA_SIZE.x - 120.0) / 2.0, STATUS_Y - 14)
 	toggle.pressed.connect(_toggle_profile)
@@ -40,7 +40,7 @@ func _toggle_profile() -> void:
 	(_profile_card as ColorRect).color = UiStyle.PAPER
 	_profile_card.size = Vector2(AREA_SIZE.x, STATUS_Y - 20)
 	add_child(_profile_card)
-	var hint: Label = UiStyle.make_label(tr("PROFILE_HINT"), 11, UiStyle.MUTED)
+	var hint: Label = UiStyle.make_label(tr("MY_QR_HINT"), 11, UiStyle.MUTED)
 	hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	hint.size = Vector2(AREA_SIZE.x - 16.0, 30)

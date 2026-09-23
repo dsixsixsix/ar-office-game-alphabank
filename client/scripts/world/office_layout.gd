@@ -1,6 +1,7 @@
 class_name OfficeLayout
 extends MapLayout
-## The Alfa-Bank office floor: rooms, doors, wall faces and props.
+## The Alfa-Bank office main floor: rooms, doors, wall faces and props. The lift in the reception
+## goes up to the product analytics floor (AnalyticsLayout).
 
 
 func _init() -> void:
@@ -101,8 +102,8 @@ func _add_props() -> void:
 	add_prop("plant_big", 14, 26)
 	# Reception.
 	add_prop("logo_sign", 17, 16)
-	add_prop("world_clocks", 26, 16)
-	add_prop("window", 29, 16)
+	add_elevator(26, 16)
+	add_prop("world_clocks", 29, 16)
 	add_prop("logo_floor", 23, 22)
 	add_prop("plant_big", 16, 18)
 	add_prop("plant_big", 31, 18)

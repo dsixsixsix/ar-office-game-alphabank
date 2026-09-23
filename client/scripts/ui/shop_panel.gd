@@ -1,9 +1,13 @@
 class_name ShopPanel
 extends CanvasLayer
-## Reward shop with two tabs: the daily rotating rewards and the garage with car models.
-## Prices, discounts, ownership and purchases are decided by Backend.
+## Reward shop with three tabs: the daily rotating rewards, the parking draw and the garage with car
+## models. Prices, discounts, ownership, tickets and the draw itself are decided by Backend.
 
-enum Tab { REWARDS, GARAGE }
+enum Tab { REWARDS, RAFFLE, GARAGE }
+
+const TAB_KEYS: Dictionary[Tab, String] = {Tab.REWARDS: "SHOP_TAB_REWARDS", Tab.RAFFLE: "SHOP_TAB_RAFFLE", Tab.GARAGE: "SHOP_TAB_GARAGE"}
+const TITLE_KEYS: Dictionary[Tab, String] = {Tab.REWARDS: "SHOP_TITLE", Tab.RAFFLE: "RAFFLE_TITLE", Tab.GARAGE: "GARAGE_TITLE"}
+const PARKING_BLUE: Color = Color("#2f6fd0")
 
 const ICONS: Texture2D = preload("res://assets/ui/shop_icons.png")
 const COIN_SHEET: Texture2D = preload("res://assets/ui/alfa_coin.png")
@@ -23,6 +27,11 @@ var _toast: Label
 var _toast_left: float = 0.0
 var _busy: bool = false
 var _width: float = 320.0
+var _raffle: BackendModels.RaffleState
+var _raffle_loaded_msec: int = 0
+var _countdown: Label
+## Draws whose replay the player has watched this session.
+static var _watched_draws: Array[String] = []
 
 
 func _ready() -> void:
@@ -73,8 +82,8 @@ func _ready() -> void:
 	var tabs: HBoxContainer = HBoxContainer.new()
 	tabs.add_theme_constant_override("separation", 6)
 	column.add_child(tabs)
-	for tab: int in 2:
-		var button: Button = UiStyle.make_button(tr("SHOP_TAB_REWARDS") if tab == Tab.REWARDS else tr("SHOP_TAB_GARAGE"), false, 12)
+	for tab: Tab in TAB_KEYS:
+		var button: Button = UiStyle.make_button(tr(TAB_KEYS[tab]), false, 12)
 		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		button.custom_minimum_size = Vector2(0, 30)
 		button.pressed.connect(_select_tab.bind(tab))
@@ -119,7 +128,7 @@ func _select_tab(tab: int) -> void:
 		_tab_buttons[index].add_theme_stylebox_override("hover", style)
 		_tab_buttons[index].add_theme_color_override("font_color", Color.WHITE if active else UiStyle.INK)
 		_tab_buttons[index].add_theme_color_override("font_hover_color", Color.WHITE if active else UiStyle.INK)
-	_title.text = tr("SHOP_TITLE") if _tab == Tab.REWARDS else tr("GARAGE_TITLE")
+	_title.text = tr(TITLE_KEYS[_tab])
 	await _reload()
 
 
@@ -137,6 +146,13 @@ func _reload() -> void:
 		_content.add_child(grid)
 		for offer: BackendModels.ShopOffer in _shop.offers:
 			grid.add_child(_make_offer_card(offer))
+	elif _tab == Tab.RAFFLE:
+		_refresh_label.text = ""
+		_raffle = await Backend.raffle.get_raffle()
+		_raffle_loaded_msec = Time.get_ticks_msec()
+		if _tab != Tab.RAFFLE:
+			return
+		_content.add_child(_make_raffle_card(_raffle))
 	else:
 		_refresh_label.text = ""
 		var garage: BackendModels.GarageState = await Backend.get_garage()
@@ -154,6 +170,13 @@ func _process(delta: float) -> void:
 		_refresh_label.text = tr("SHOP_REFRESH") % "%02d:%02d:%02d" % [left / 3600, left / 60 % 60, left % 60]
 		if left == 0:
 			_shop = null
+			_reload()
+	if _tab == Tab.RAFFLE and _raffle != null and _raffle.phase == BackendModels.RaffleState.Phase.OPEN and _countdown != null:
+		@warning_ignore("integer_division")
+		var until_draw: int = maxi(0, _raffle.seconds_to_draw - (Time.get_ticks_msec() - _raffle_loaded_msec) / 1000)
+		_countdown.text = RaffleCard.countdown_text(until_draw)
+		if until_draw == 0:
+			_raffle = null
 			_reload()
 	_toast_left = maxf(0.0, _toast_left - delta)
 	_toast.modulate.a = clampf(_toast_left, 0.0, 1.0)
@@ -215,6 +238,39 @@ func _make_offer_card(offer: BackendModels.ShopOffer) -> Control:
 	button.pressed.connect(_on_buy.bind(offer))
 	column.add_child(button)
 	return card
+
+
+# --- Parking draw ----------------------------------------------------------------
+
+
+func _make_raffle_card(state: BackendModels.RaffleState) -> Control:
+	var card: RaffleCard = RaffleCard.new()
+	card.build(state, _width - 30.0, _watched_draws.has(state.draw_id))
+	_countdown = card.countdown
+	card.buy_pressed.connect(_on_buy_ticket)
+	card.watch_pressed.connect(_watch_draw.bind(state))
+	return card
+
+
+func _on_buy_ticket() -> void:
+	if _busy:
+		return
+	_busy = true
+	var result: BackendModels.PurchaseResult = await Backend.raffle.buy_ticket()
+	_busy = false
+	_show_toast(tr("RAFFLE_TICKET_BOUGHT") if result.status == BackendModels.PurchaseResult.Status.GRANTED else tr("ERROR_" + result.error.to_upper()))
+	await _reload()
+
+
+func _watch_draw(state: BackendModels.RaffleState) -> void:
+	var roulette: RaffleRoulette = RaffleRoulette.new()
+	add_child(roulette)
+	roulette.play(state)
+	await roulette.finished
+	if not _watched_draws.has(state.draw_id):
+		_watched_draws.append(state.draw_id)
+	await _reload()
+
 
 
 func _make_car_card(car: BackendModels.CarInfo) -> Control:

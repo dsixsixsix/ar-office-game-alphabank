@@ -49,6 +49,15 @@ const DEFS: Dictionary[String, Array] = {
 	"sofa_green": [Kind.FURNITURE, Vector2i(96, 46), Vector2i(3, 1), true],
 	"party_table": [Kind.FURNITURE, Vector2i(28, 40), Vector2i(1, 1), true],
 	"design_desk": [Kind.FURNITURE, Vector2i(64, 58), Vector2i(2, 1), true],
+	# Product analytics floor.
+	"standing_desk": [Kind.FURNITURE, Vector2i(60, 56), Vector2i(2, 1), true],
+	"phone_booth": [Kind.FURNITURE, Vector2i(32, 72), Vector2i(1, 1), true],
+	"cube_pouf": [Kind.FURNITURE, Vector2i(22, 20), Vector2i(1, 1), false],
+	"data_wall": [Kind.WALL, Vector2i(124, 58), Vector2i(4, 2), false],
+	"kanban_board": [Kind.WALL, Vector2i(60, 44), Vector2i(2, 2), false],
+	"funnel_board": [Kind.WALL, Vector2i(58, 44), Vector2i(2, 2), false],
+	"neon_chart": [Kind.WALL, Vector2i(30, 40), Vector2i(1, 2), false],
+	"elevator": [Kind.WALL, Vector2i(60, 62), Vector2i(2, 2), false],
 	# Apartment.
 	"bed_double": [Kind.FURNITURE, Vector2i(64, 84), Vector2i(2, 3), true],
 	"nightstand": [Kind.FURNITURE, Vector2i(24, 40), Vector2i(1, 1), true],

@@ -47,6 +47,10 @@ var doors: Array[Rect2i] = []
 ## Glass entrance cells drawn over the bottom wall; not walkable.
 var entrances: Array[Rect2i] = []
 var props: Array[Prop] = []
+## Lift to the other floors: the wall prop's footprint and the floor cell in front of its doors.
+## Empty when the floor has no lift.
+var elevator: Rect2i = Rect2i()
+var elevator_cell: Vector2i = Vector2i.ZERO
 
 var _cells: PackedInt32Array = PackedInt32Array()
 
@@ -57,6 +61,18 @@ func add_room(id: StringName, name_key: String, rect: Rect2i, style: OfficeTiles
 
 func add_prop(id: String, x: int, y: int) -> void:
 	props.append(Prop.new(id, Vector2i(x, y)))
+
+
+## Lift doors on a wall face at (x, y); the player waits on the floor cell right below them.
+func add_elevator(x: int, y: int) -> void:
+	add_prop("elevator", x, y)
+	elevator = Rect2i(Vector2i(x, y), PropCatalog.footprint("elevator"))
+	@warning_ignore("integer_division")
+	elevator_cell = Vector2i(x + elevator.size.x / 2, y + elevator.size.y)
+
+
+func has_elevator() -> bool:
+	return elevator.has_area()
 
 
 func finalize() -> void:
@@ -110,6 +126,8 @@ func validate() -> PackedStringArray:
 	var errors: PackedStringArray = PackedStringArray()
 	if not is_walkable_cell(spawn_cell):
 		errors.append("Spawn cell %s is not walkable" % spawn_cell)
+	if has_elevator() and not is_walkable_cell(elevator_cell):
+		errors.append("Elevator cell %s is not walkable" % elevator_cell)
 	for prop: Prop in props:
 		if not PropCatalog.DEFS.has(prop.id):
 			errors.append("Unknown prop '%s'" % prop.id)

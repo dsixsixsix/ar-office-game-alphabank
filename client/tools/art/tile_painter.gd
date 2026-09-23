@@ -153,6 +153,23 @@ func _floor(style: int, variant: int) -> void:
 					c.hline(tx * 16, ty * 16, 16, Palette.light(tint, 0.06))
 					c.vline(tx * 16 + 15, ty * 16, 16, Palette.shade(tint, 0.08))
 			_speckle(cream, 6, 0.04)
+		OfficeTiles.Style.CARPET:
+			var teal: Color = Color("#3c6f73")
+			c.rect(0, 0, S, S, teal)
+			for y: int in S:
+				for x: int in range(y % 2, S, 2):
+					c.px(x, y, Palette.shade(teal, 0.04))
+			_speckle(teal, 26 + variant * 6, 0.07)
+			c.hline(0, S - 1, S, Palette.shade(teal, 0.1))
+			c.vline(S - 1, 0, S, Palette.shade(teal, 0.1))
+		OfficeTiles.Style.CONCRETE:
+			var concrete: Color = Color("#9fa3a8")
+			c.rect(0, 0, S, S, concrete)
+			_speckle(concrete, 40 + variant * 8, 0.06)
+			if variant == 1:
+				c.line(4, 22, 13, 27, Palette.shade(concrete, 0.08))
+			c.hline(0, S - 1, S, Palette.shade(concrete, 0.12))
+			c.vline(S - 1, 0, S, Palette.shade(concrete, 0.12))
 		OfficeTiles.Style.DOOR:
 			c.rect(0, 0, S, S, Color("#cfc8bd"))
 			c.hline(0, 1, S, Color("#b3aa9d"))
@@ -186,6 +203,10 @@ func _face(style: int, upper: bool) -> void:
 			wall = Color("#efdfc6")
 		OfficeTiles.Style.HOME_KITCHEN:
 			wall = Color("#f1ece4")
+		OfficeTiles.Style.CARPET:
+			wall = Color("#e4e8e8")
+		OfficeTiles.Style.CONCRETE:
+			wall = Color("#3a3f48")
 	c.rect(0, 0, S, S, wall)
 	if style == OfficeTiles.Style.BEDROOM:
 		for x: int in range(0, S, 8):
@@ -211,6 +232,16 @@ func _face(style: int, upper: bool) -> void:
 		if upper:
 			c.hline(0, 1, S, Color("#ff4fa3"))
 			c.hline(0, 2, S, Color(1.0, 0.31, 0.64, 0.35))
+		return
+	if style == OfficeTiles.Style.CONCRETE:
+		for y: int in range(3, S, 8):
+			c.hline(0, y, S, Palette.light(wall, 0.05))
+		if upper:
+			c.hline(0, 1, S, Color("#5ce1e6"))
+			c.hline(0, 2, S, Color(0.36, 0.88, 0.9, 0.35))
+			return
+		c.rect(0, 28, S, 4, Color("#23262d"))
+		c.hline(0, 28, S, Color("#5ce1e6"))
 		return
 	if upper:
 		for y: int in 5:
@@ -254,6 +285,9 @@ func _face(style: int, upper: bool) -> void:
 		OfficeTiles.Style.LIVING:
 			c.rect(0, 20, S, 8, Color("#e4cfb0"))
 			c.hline(0, 20, S, Color("#c9a97e"))
+		OfficeTiles.Style.CARPET:
+			c.rect(0, 18, S, 3, Color("#2fb3a6"))
+			c.hline(0, 21, S, Palette.shade(Color("#2fb3a6"), 0.2))
 	c.rect(0, 28, S, 4, Color("#b8afa3"))
 	c.hline(0, 28, S, Color("#cfc7bb"))
 
