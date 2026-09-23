@@ -1,0 +1,13 @@
+# Nakama settings without secrets. Keys and passwords are passed as flags from docker-compose.yml.
+name: office-game
+logger:
+  level: INFO
+session:
+  # A player signs in once a week: the session lives 7 days and is not refreshed after that.
+  token_expiry_sec: 604800
+  refresh_token_expiry_sec: 604800
+  single_socket: true
+console:
+  username: admin
+runtime:
+  path: /nakama/data/modules

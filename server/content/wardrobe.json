@@ -1,5 +1,5 @@
 {
-	"_comment": "Mock server content: wardrobe items. unlock.type: free | shop (item = shop catalog id bought at least once) | streak (days in a row). The server checks unlocks when an outfit is saved.",
+	"_comment": "Server content: wardrobe items. unlock.type: free | shop (item = shop catalog id bought at least once) | streak (days in a row). The server checks unlocks when an outfit is saved.",
 	"items": [
 		{"slot": "skin", "id": "0", "name": "Светлая"},
 		{"slot": "skin", "id": "1", "name": "Тёплая"},

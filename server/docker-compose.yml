@@ -1,0 +1,67 @@
+# Local server: PostgreSQL + Nakama with the Go module (built by the Dockerfile).
+#
+#   cp .env.example .env      # then set real secrets
+#   docker compose up --build
+#
+# Ports: 7350 client API (HTTP + WebSocket), 7351 Nakama console.
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: nakama
+      POSTGRES_USER: nakama
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "nakama", "-d", "nakama"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  nakama:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DB_ADDRESS: nakama:${POSTGRES_PASSWORD}@postgres:5432/nakama
+      NAKAMA_SERVER_KEY: ${NAKAMA_SERVER_KEY:?set NAKAMA_SERVER_KEY in .env}
+      NAKAMA_HTTP_KEY: ${NAKAMA_HTTP_KEY:?set NAKAMA_HTTP_KEY in .env}
+      NAKAMA_SESSION_KEY: ${NAKAMA_SESSION_KEY:?set NAKAMA_SESSION_KEY in .env}
+      NAKAMA_REFRESH_KEY: ${NAKAMA_REFRESH_KEY:?set NAKAMA_REFRESH_KEY in .env}
+      NAKAMA_CONSOLE_PASSWORD: ${NAKAMA_CONSOLE_PASSWORD:?set NAKAMA_CONSOLE_PASSWORD in .env}
+      ADMIN_USERNAME: ${ADMIN_USERNAME:?set ADMIN_USERNAME in .env}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:?set ADMIN_PASSWORD in .env}
+      PRESENCE_SECRET: ${PRESENCE_SECRET:?set PRESENCE_SECRET in .env}
+      DEV_MODE: ${DEV_MODE:-false}
+    # Secrets come from the environment, never from local.yml.
+    entrypoint:
+      - /bin/sh
+      - -ec
+      - >
+        /nakama/nakama migrate up --database.address "$$DB_ADDRESS" &&
+        exec /nakama/nakama --config /nakama/data/local.yml
+        --database.address "$$DB_ADDRESS"
+        --socket.server_key "$$NAKAMA_SERVER_KEY"
+        --runtime.http_key "$$NAKAMA_HTTP_KEY"
+        --session.encryption_key "$$NAKAMA_SESSION_KEY"
+        --session.refresh_encryption_key "$$NAKAMA_REFRESH_KEY"
+        --console.password "$$NAKAMA_CONSOLE_PASSWORD"
+        --runtime.env "ADMIN_USERNAME=$$ADMIN_USERNAME"
+        --runtime.env "ADMIN_PASSWORD=$$ADMIN_PASSWORD"
+        --runtime.env "PRESENCE_SECRET=$$PRESENCE_SECRET"
+        --runtime.env "DEV_MODE=$$DEV_MODE"
+    ports:
+      - "7350:7350"
+      - "7351:7351"
+    healthcheck:
+      test: ["CMD", "/nakama/nakama", "healthcheck"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  postgres-data:

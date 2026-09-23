@@ -1,5 +1,5 @@
 {
-	"_comment": "Mock server content: reward catalog. icon = column in assets/ui/shop_icons.png. Epic and legendary purchases need manual approval. Merch also unlocks matching wardrobe items (see wardrobe.json).",
+	"_comment": "Server content: reward catalog. icon = column in assets/ui/shop_icons.png. Epic and legendary purchases need manual approval. Merch also unlocks matching wardrobe items (see wardrobe.json).",
 	"items": [
 		{"id": "sticker_pack", "name": "Стикерпак Альфа", "description": "Набор стикеров для ноутбука.", "rarity": "common", "price": 60, "icon": 3},
 		{"id": "mug", "name": "Кружка с логотипом", "description": "Для кофе, который ты сваришь команде.", "rarity": "common", "price": 120, "icon": 2},

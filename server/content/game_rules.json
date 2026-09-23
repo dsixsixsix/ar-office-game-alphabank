@@ -1,0 +1,75 @@
+{
+	"_comment": "Game rules of the server module. office: office id on the presence codes and its time zone (days, streaks and fines follow office time). attendance.fine_tiers: the n-th workday missed in a row costs `percent` of the balance, rounded up, never below zero; the first missed day only breaks the streak. photo.partner_bonus: coins the colleague gets for confirming a joint photo. raffle: parking draw on the last Friday of every month. avatar_templates: ready-made profile pictures (client AvatarCatalog.TEMPLATES).",
+	"office": {
+		"id": "hq",
+		"utc_offset_minutes": 300
+	},
+	"attendance": {
+		"fine_tiers": [
+			{
+				"days": 2,
+				"percent": 3
+			},
+			{
+				"days": 3,
+				"percent": 5
+			},
+			{
+				"days": 5,
+				"percent": 10
+			},
+			{
+				"days": 10,
+				"percent": 15
+			}
+		],
+		"max_catch_up_days": 60
+	},
+	"notifications": {
+		"reminder_times": [
+			"09:30",
+			"14:00",
+			"18:30"
+		],
+		"fun_window": [
+			"11:00",
+			"19:30"
+		],
+		"fun_max": 2
+	},
+	"photo": {
+		"partner_bonus": 10
+	},
+	"raffle": {
+		"prize_name": "Место на тёплом паркинге",
+		"prize_description": "Крытый тёплый паркинг под офисом на весь следующий месяц.",
+		"ticket_price": 1500,
+		"min_office_days": 8,
+		"window_days": 30,
+		"draw_hour": 18,
+		"draw_minute": 0
+	},
+	"economy": {
+		"welcome_bonus": 500,
+		"daily_coin_cap": 700,
+		"max_score_bonus": 0.2,
+		"streak_multiplier_step": 0.1,
+		"max_streak_multiplier": 2.0
+	},
+	"avatar_templates": [
+		"me",
+		"anna",
+		"sergey",
+		"olga",
+		"igor",
+		"reception",
+		"masha",
+		"timur",
+		"vera",
+		"kostya",
+		"fox",
+		"raccoon",
+		"deer",
+		"cat"
+	]
+}
