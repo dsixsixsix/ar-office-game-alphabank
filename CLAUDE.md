@@ -40,7 +40,8 @@
 | Сканирование QR | Нативный плагин: Android — Godot Android Plugin v2 + ML Kit; iOS — GDExtension-плагин + AVFoundation | `JavaScriptBridge` + `getUserMedia` + jsQR |
 | Геолокация | Нативный плагин: Android — Fused Location Provider; iOS — CoreLocation | `JavaScriptBridge` + Geolocation API |
 | BLE-маяки (опционально) | Нативный плагин | Не поддерживается |
-| Уведомления (опционально) | Нативный плагин (FCM / APNs) | Не поддерживается |
+| Уведомления | Локальные: Android — плагин + `AlarmManager`; iOS — плагин + UserNotifications (не сделан). Push от сервера — FCM / APNs | Notification API (пока открыта вкладка), Web Push от сервера |
+| Выбор фото из галереи | Нативный диалог файлов Godot | `JavaScriptBridge` + `<input type="file">` |
 
 Игровой код обращается только к `PlatformServices`, никогда напрямую к плагинам или `JavaScriptBridge`.
 
