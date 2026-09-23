@@ -1,7 +1,6 @@
 class_name MeetColleagueMinigame
 extends Minigame
-## Meeting someone from another department: blind coffee, lunch with the neighbours, "explain your
-## job". With an assigned colleague (context["colleague"]) the card shows whom to find; otherwise
+## Meeting someone from another department: blind coffee, "explain your job". With an assigned colleague (context["colleague"]) the card shows whom to find; otherwise
 ## anyone from another department who is in the office will do. Icebreaker questions help to start
 ## the talk. After the talk timer the colleague opens "My QR" in their game and the player scans it.
 ## The server checks the code, the department, the colleague's presence and the task's hours.

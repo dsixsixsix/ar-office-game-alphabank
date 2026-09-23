@@ -130,7 +130,7 @@ func _verify_photo(task: Dictionary, proof: Dictionary) -> String:
 
 
 ## Meeting a colleague: their profile code was scanned. An assigned colleague must match; otherwise
-## anyone present from another department who has not been met today, within the task's hours.
+## anyone present from another department who has not been met today.
 func _verify_meeting(task: Dictionary, proof: Dictionary) -> String:
 	var colleague_id: String = str(proof.get("colleague_id", ""))
 	var kind: String = str(task.get("assignment", ""))
@@ -139,9 +139,6 @@ func _verify_meeting(task: Dictionary, proof: Dictionary) -> String:
 	var error: String = _verify_colleague(colleague_id, kind != "present_colleague")
 	if not error.is_empty():
 		return error
-	var window: Array = (task.get("params", {}) as Dictionary).get("window", [])
-	if window.size() == 2 and not _in_window(window):
-		return "outside_time_window"
 	return ""
 
 
@@ -180,14 +177,6 @@ func _verify_colleague(colleague_id: String, other_department: bool) -> String:
 func _assigned(task_id: String) -> String:
 	return str(_store.day_dict("assignments").get(task_id, ""))
 
-
-func _in_window(window: Array) -> bool:
-	var start: Vector2i = NotificationPlanner.parse_clock(str(window[0]))
-	var end: Vector2i = NotificationPlanner.parse_clock(str(window[1]))
-	var now: int = _store.now()
-	var today: int = _store.today()
-	var offset: int = _store.utc_offset()
-	return now >= WorkCalendar.unix_at(today, start.x, start.y, offset) and now < WorkCalendar.unix_at(today, end.x, end.y, offset)
 
 
 # --- Joint photo confirmations ------------------------------------------------------

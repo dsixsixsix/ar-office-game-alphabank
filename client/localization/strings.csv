@@ -311,7 +311,6 @@ ERROR_NO_COLLEAGUE_AVAILABLE,Сейчас в офисе нет свободны�
 ERROR_SAME_DEPARTMENT,Нужен коллега из другого департамента,You need a colleague from another department
 ERROR_SAME_DEPARTMENT_TWICE,"Этот департамент уже есть, нужен другой","That department is already on the card, find another one"
 ERROR_NOT_ENOUGH_COLLEAGUES,Нужно больше коллег,More colleagues needed
-ERROR_OUTSIDE_TIME_WINDOW,Это задание можно выполнить только в обед,This task can only be done at lunchtime
 ERROR_STATUS_TOO_LONG,Статус слишком длинный,The status is too long
 ERROR_UNKNOWN_AVATAR,Такого аватара нет,No such avatar
 ERROR_AVATAR_MISSING,Сначала загрузите фото,Upload a photo first
