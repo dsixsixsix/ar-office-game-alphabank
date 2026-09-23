@@ -1,34 +1,45 @@
 class_name DevQrCodes
 extends RefCounted
-## DEV-ONLY: codes the desktop sensor emulator can "show" to the camera, and the settings the mock
-## backend and the office screen share. The real presence secret exists only on the server.
+## DEV-ONLY: codes the desktop sensor emulator can "show" to the camera. The entry and exit codes
+## and the other players come from the dev RPCs of a server running with DEV_MODE=true; the secret
+## that signs the codes never leaves the server.
 
-const OFFICE_ID: String = "hq"
-const SECRET_ENV: String = "OFFICE_GAME_PRESENCE_SECRET"
-## Used only when the environment variable is not set. Never used by a real server.
-const FALLBACK_DEV_SECRET: String = "local-dev-presence-secret"
-
-
-static func presence_secret() -> String:
-	var secret: String = OS.get_environment(SECRET_ENV)
-	return secret if not secret.is_empty() else FALLBACK_DEV_SECRET
+## [label, QR text] pairs from the last refresh().
+static var _entries: Array[Array] = []
 
 
-static func current_presence_code() -> String:
-	var step: int = PresenceToken.step_at(Time.get_unix_time_from_system())
-	return QrPayload.presence(PresenceToken.generate(presence_secret(), OFFICE_ID, step))
-
-
-## [label, QR text] pairs. The presence code is generated on each call so it is always fresh.
-static func suggestions() -> Array[Array]:
-	var result: Array[Array] = [["office screen", current_presence_code()]]
+## Reloads the list: fresh office screen codes (they rotate every 30 s) and the players.
+static func refresh() -> void:
+	var result: Array[Array] = []
+	var codes: ServerSession.RpcResult = await Backend.dev_call("dev_presence_codes")
+	if codes.ok:
+		result.append(["office IN", QrPayload.presence(str(codes.data.get("entry", "")))])
+		result.append(["office OUT", QrPayload.checkout(str(codes.data.get("exit", "")))])
 	for floor_id: StringName in OfficeFloors.ORDER:
 		for room: MapLayout.Room in OfficeFloors.layout(floor_id).rooms:
 			result.append(["room " + room.id, QrPayload.room(room.id)])
-	# Colleagues' "My QR" codes; "*" marks who is in the office today in the mock.
-	var mock: MockBackend = Backend.get_mock()
-	for colleague: BackendModels.Colleague in mock.social.list_colleagues():
-		result.append([colleague.user_id.trim_prefix("colleague-") + ("*" if colleague.present else ""), QrPayload.user(colleague.user_id)])
-	result.append(["expired", QrPayload.presence(PresenceToken.generate(presence_secret(), OFFICE_ID, 1))])
+	# Other players' "My QR" codes; "*" marks who is in the office now.
+	var players: ServerSession.RpcResult = await Backend.dev_call("dev_list_players")
+	for player: Variant in players.data.get("players", []):
+		if player is Dictionary:
+			var card: Dictionary = player
+			var label: String = str(card.get("name", "?")) + ("*" if bool(card.get("present", false)) else "")
+			result.append([label, QrPayload.user(str(card.get("user_id", "")))])
+	result.append(["expired", QrPayload.presence("hq.1.00000000000000000000")])
 	result.append(["wifi", "WIFI:S:Guest;T:WPA;P:example;;"])
-	return result
+	_entries = result
+
+
+static func suggestions() -> Array[Array]:
+	return _entries
+
+
+## Text of the entry at `index` with office codes refreshed first, so a pressed code is never stale.
+static func fresh_text(index: int) -> String:
+	var label: String = str(_entries[index][0]) if index < _entries.size() else ""
+	if label.begins_with("office"):
+		await refresh()
+	for entry: Array in _entries:
+		if str(entry[0]) == label:
+			return str(entry[1])
+	return ""

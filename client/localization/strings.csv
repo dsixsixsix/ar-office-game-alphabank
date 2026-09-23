@@ -135,7 +135,9 @@ QR_WRONG_CODE,Это не тот QR-код,That's not the right QR code
 QR_UNKNOWN_ROOM,Такой комнаты нет на карте,No such room on the map
 QR_GOING_TO_ROOM,Идём: %s,Heading to: %s
 QR_COLLEAGUE_HINT,Это профиль коллеги. Он нужен в заданиях на знакомство,That's a colleague's profile. It is used in the meet-a-colleague tasks
-QR_ALREADY_CHECKED_IN,Ты уже отметился сегодня,You've already checked in today
+QR_ALREADY_CHECKED_IN,Ты уже в офисе,You're already at the office
+QR_BACK_IN_OFFICE,С возвращением в офис!,Welcome back to the office!
+QR_CHECKED_OUT,"Ты вышел из офиса. Задания подождут до следующего входа","You've left the office. Tasks will wait until you come back"
 MG_NO_SENSORS,На этом устройстве нет нужных датчиков.,This device lacks the required sensors.
 MG_NO_PERMISSION,Нет доступа к датчикам.,No access to the sensors.
 MG_FALLBACK,Играем в упрощённую версию.,Playing the simplified version.
@@ -178,13 +180,17 @@ NOTE_GS,СОЛЬ#,G#
 NOTE_A,ЛЯ,A
 NOTE_AS,ЛЯ#,A#
 NOTE_B,СИ,B
-ERROR_PRESENCE_REQUIRED,Сначала отметься на ресепшне,Check in at reception first
+ERROR_PRESENCE_REQUIRED,Сначала отсканируй код ВХОД на экране у ресепшна,Scan the IN code on the reception screen first
 ERROR_PRESENCE_TOKEN_INVALID,QR-код устарел или недействителен,The QR code has expired or is invalid
 ERROR_PRESENCE_TOKEN_REUSED,Этот QR-код уже использован,This QR code has already been used
 ERROR_COLLEAGUE_INVALID,Неверный профиль коллеги,Invalid colleague profile
 ERROR_COLLEAGUE_ALREADY_USED,С этим коллегой сегодня уже было задание,You've already done a task with this colleague today
 PROFILE_TITLE,Профиль,Profile
 OFFICE_SCREEN_HINT,"Отсканируй в игре «Альфа Офис», чтобы отметиться",Scan in Alfa Office to check in
+OFFICE_SCREEN_ENTRY,ВХОД - отсканируй при входе,IN - scan when you arrive
+OFFICE_SCREEN_EXIT,ВЫХОД - отсканируй при уходе,OUT - scan when you leave
+OFFICE_SCREEN_OFFLINE,"Нет связи с сервером, пробую снова","No connection to the server, retrying"
+OFFICE_SCREEN_NO_KEY,"Нет ключа экрана: запустите с --kiosk-key=<NAKAMA_HTTP_KEY>","No screen key: run with --kiosk-key=<NAKAMA_HTTP_KEY>"
 OFFICE_SCREEN_REFRESH,Код обновится через %d с,New code in %d s
 MG_FIND_OBJECT_HINT,Покажи камере названный предмет и подержи в кадре,Show the named object to the camera and hold it in frame
 MG_FIND_OBJECT_SEEN,Вижу: %s,I see: %s
@@ -305,7 +311,7 @@ ERROR_RAFFLE_ALREADY_JOINED,У вас уже есть билет,You already hav
 ERROR_RAFFLE_NOT_ELIGIBLE,Пока мало дней в офисе для участия,Not enough office days to take part yet
 ERROR_PENDING_CONFIRMATION,Ждём подтверждения от коллеги,Waiting for your colleague to confirm
 ERROR_COLLEAGUE_NOT_ASSIGNED,"Это не тот коллега, которого выбрала игра",That's not the colleague the game picked
-ERROR_COLLEAGUE_NOT_PRESENT,Коллега сегодня не отмечался в офисе,The colleague hasn't checked in at the office today
+ERROR_COLLEAGUE_NOT_PRESENT,Коллеги сейчас нет в офисе,The colleague is not at the office now
 ERROR_NOT_ENOUGH_FACES,В кадре должно быть двое,Two people must be in the frame
 ERROR_NO_COLLEAGUE_AVAILABLE,Сейчас в офисе нет свободных коллег. Попробуй позже,No colleagues are available at the office right now. Try later
 ERROR_SAME_DEPARTMENT,Нужен коллега из другого департамента,You need a colleague from another department
@@ -340,4 +346,23 @@ MG_BINGO_SCAN_BUTTON,Отсканировать коллегу,Scan a colleague
 MG_BINGO_SCAN,Коллега №%d: отсканируй его «Мой QR»,"Colleague #%d: scan their ""My QR"""
 MG_BINGO_SLOT,Коллега №%d: ?,Colleague #%d: ?
 MG_BINGO_ALREADY,Этот коллега уже в карточке,This colleague is already on the card
-COLLEAGUE_USUALLY_AT,Обычно: %s,Usually at: %s
+COLLEAGUE_USUALLY_AT,Последний раз: %s,Last seen: %s
+LOGIN_TITLE,Вход в игру,Sign in
+LOGIN_USERNAME,Логин,Username
+LOGIN_PASSWORD,Пароль,Password
+LOGIN_SUBMIT,Войти,Sign in
+LOGIN_CONNECTING,Подключение...,Connecting...
+LOGIN_HINT,"Логин и пароль выдаёт администратор. Входить нужно раз в неделю","Your username and password come from the admin. You sign in once a week"
+LOGIN_ERROR_CREDENTIALS,"Неверный логин или пароль. Нет доступа - обратитесь к администратору","Wrong username or password. No access yet? Ask the admin"
+LOGIN_ERROR_BLOCKED,Доступ закрыт. Обратитесь к администратору,Access is closed. Ask the admin
+LOGIN_ERROR_NETWORK,Нет связи с сервером. Проверьте Wi-Fi и попробуйте снова,No connection to the server. Check Wi-Fi and try again
+LOGIN_ERROR_NOT_PLAYER,Это аккаунт администратора. Войдите как игрок,This is the admin account. Sign in as a player
+LOGIN_ERROR_SERVER,Сервер не ответил. Попробуйте ещё раз,The server did not answer. Try again
+PROFILE_SIGN_OUT,Выйти из аккаунта,Sign out
+ERROR_NETWORK,Нет связи с сервером. Проверь Wi-Fi,No connection to the server. Check Wi-Fi
+ERROR_SERVER,Сервер не ответил. Попробуй ещё раз,The server did not answer. Try again
+ERROR_UNAUTHENTICATED,Сессия закончилась. Войди снова,Your session has ended. Sign in again
+ERROR_INVALID_PAYLOAD,Сервер не понял запрос,The server did not understand the request
+ERROR_NOT_PLAYER,Это аккаунт администратора,This is the admin account
+ERROR_ALREADY_IN_OFFICE,Ты уже в офисе,You're already at the office
+ERROR_NOT_IN_OFFICE,Ты сейчас не в офисе,You're not at the office now

@@ -128,15 +128,23 @@ func _rebuild_buttons(mode: int) -> void:
 		child.queue_free()
 	_button_box.visible = mode == PlatformBackend.CameraMode.QR or mode == PlatformBackend.CameraMode.LABELS
 	if mode == PlatformBackend.CameraMode.QR:
-		var entries: Array[Array] = DevQrCodes.suggestions()
-		for index: int in entries.size():
-			# Codes are regenerated on press: the office screen code rotates.
-			var on_press: Callable = func() -> void: platform.call("emit_qr", str(DevQrCodes.suggestions()[index][1]))
-			_button_box.add_child(_make_button(str(entries[index][0]), on_press))
+		_load_qr_buttons()
 	elif mode == PlatformBackend.CameraMode.LABELS:
 		_button_box.add_child(_make_button("none", func() -> void: platform.set("label_id", "")))
 		for label: String in OfficeObjects.all_labels():
 			_button_box.add_child(_make_button(label, func() -> void: platform.set("label_id", label)))
+
+
+## The list comes from the server (office codes, players), so it is filled in when it arrives.
+func _load_qr_buttons() -> void:
+	await DevQrCodes.refresh()
+	if _button_mode != PlatformBackend.CameraMode.QR:
+		return
+	var entries: Array[Array] = DevQrCodes.suggestions()
+	for index: int in entries.size():
+		# Office codes are fetched again on press: they rotate every 30 s.
+		var on_press: Callable = func() -> void: platform.call("emit_qr", await DevQrCodes.fresh_text(index))
+		_button_box.add_child(_make_button(str(entries[index][0]), on_press))
 
 
 func _say() -> void:

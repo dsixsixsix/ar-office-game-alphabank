@@ -92,6 +92,10 @@ func cancel_all_notifications() -> void:
 	JavaScriptBridge.eval("window.alfaOffice.cancelAll()", true)
 
 
+func page_host() -> String:
+	return str(JavaScriptBridge.eval("window.location.hostname", true))
+
+
 func pick_image() -> Image:
 	var helpers: JavaScriptObject = JavaScriptBridge.get_interface("alfaOffice")
 	if helpers == null:

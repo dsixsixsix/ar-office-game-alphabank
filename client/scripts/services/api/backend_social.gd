@@ -4,45 +4,42 @@ extends Node
 ## lookups, joint photo confirmations and the inbox.
 
 var _backend: BackendService
-var _impl: MockSocial
 
 
-func _init(backend: BackendService, impl: MockSocial) -> void:
+func _init(backend: BackendService) -> void:
 	name = "Social"
 	_backend = backend
-	_impl = impl
 
 
-## Colleague the server picked for a task (joint photo, blind coffee). Only players who checked in today.
+## Colleague the server picked for a task (joint photo, blind coffee). Only players in the office now.
 func assign_colleague(task_id: String) -> BackendModels.ColleagueResult:
-	await _backend.latency()
-	_backend.get_mock().tick()
-	return _impl.assign_colleague(task_id)
+	var response: ServerSession.RpcResult = await _backend.call_rpc("assign_colleague", {"task_id": task_id})
+	return BackendParser.colleague_result(response.data, response.error)
 
 
 ## Public card of the player behind a scanned profile code; null when unknown.
 func lookup_colleague(user_id: String) -> BackendModels.Colleague:
-	await _backend.latency()
-	return _impl.lookup_colleague(user_id)
+	var response: ServerSession.RpcResult = await _backend.call_rpc("lookup_colleague", {"user_id": user_id})
+	if not bool(response.data.get("found", false)) or not response.data.get("colleague") is Dictionary:
+		return null
+	return BackendParser.colleague(response.data["colleague"])
 
 
-## Newest first.
+## Newest first. Other players' actions (a confirmed photo, a draw) may have changed the balance.
 func get_inbox() -> Array[BackendModels.InboxItem]:
-	await _backend.latency()
-	_backend.get_mock().tick()
-	var items: Array[BackendModels.InboxItem] = _impl.get_inbox()
-	_backend.apply_balance(_backend.get_mock().get_balance())
-	return items
+	var response: ServerSession.RpcResult = await _backend.call_rpc("get_inbox")
+	if response.ok:
+		_backend.apply_balance(int(response.data.get("balance", -1)))
+	return BackendParser.inbox(response.data)
 
 
 func mark_inbox_read() -> void:
-	await _backend.latency()
-	_impl.mark_inbox_read()
+	await _backend.call_rpc("mark_inbox_read")
 
 
 ## Answer to "<colleague> took a photo with you. Is it true?".
 func respond_photo_request(item_id: int, confirm: bool) -> BackendModels.ActionResult:
-	await _backend.latency()
-	var result: BackendModels.ActionResult = _impl.respond_photo_request(item_id, confirm, _backend.operation_key())
-	_backend.apply_balance(_backend.get_mock().get_balance())
-	return result
+	var payload: Dictionary = {"item_id": item_id, "confirm": confirm, "operation_key": _backend.operation_key()}
+	var response: ServerSession.RpcResult = await _backend.call_rpc("respond_photo_request", payload)
+	_backend.apply_balance(int(response.data.get("balance", -1)))
+	return BackendParser.action(response.data, response.error)

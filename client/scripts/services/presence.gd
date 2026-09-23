@@ -1,8 +1,8 @@
 extends Node
 ## Where the player physically is (autoload "Presence"). The zone is a room id of the office.
-## Today it changes only when the player scans the static QR code at a room door; BLE beacons will
-## feed the same signal later. A zone is navigation only, never proof of presence for rewards,
-## and the zone history is not stored or sent anywhere.
+## Today it changes only when the player scans the static QR code at a room door and the server
+## accepts it (inside the office interval); BLE beacons will feed the same signal later. A zone is
+## navigation only, never proof of presence for rewards; the server keeps only the last room of today.
 
 signal zone_changed(room_id: StringName)
 

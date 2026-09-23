@@ -38,6 +38,18 @@ func _reload() -> void:
 	content.add_child(_make_totals())
 	content.add_child(_make_history())
 	content.add_child(_make_notifications())
+	content.add_child(_make_sign_out())
+
+
+## Another player can sign in on the same phone; the progress stays with each account.
+func _make_sign_out() -> Button:
+	var button: Button = UiStyle.make_button(tr("PROFILE_SIGN_OUT"), false, 10)
+	button.custom_minimum_size = Vector2(0, 28)
+	button.pressed.connect(func() -> void:
+		button.disabled = true
+		await Backend.sign_out()
+	)
+	return button
 
 
 func _show_toast(text: String) -> void:
@@ -128,7 +140,7 @@ func _make_avatar_picker() -> Control:
 	section.add_child(grid)
 	var side: float = floorf((content_width - 4.0 * (TEMPLATE_COLUMNS - 1)) / TEMPLATE_COLUMNS)
 	var options: Array[String] = AvatarCatalog.TEMPLATES.duplicate()
-	if Backend.account.get_custom_avatar(_page.profile.user_id) != null:
+	if _page.has_custom_avatar:
 		options.push_front(AvatarCatalog.CUSTOM)
 	for avatar_id: String in options:
 		var button: Button = Button.new()

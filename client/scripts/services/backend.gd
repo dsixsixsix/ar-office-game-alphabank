@@ -1,8 +1,9 @@
 class_name BackendService
 extends Node
-## Game-facing server API (autoload "Backend"). Every call is async so the mock can be swapped for
-## Nakama RPCs without touching callers. The client never changes balance, unlocks or ownership itself.
-## Tasks, shop, wardrobe and garage are here; the other groups of RPCs are `social` (colleagues,
+## Game-facing server API (autoload "Backend"). Every call is an RPC to the Nakama Go module
+## (server/modules); the client never changes balance, unlocks or ownership itself. The game needs
+## the network: a failed call returns a result with the error "network" and emits request_failed.
+## Tasks, shop, wardrobe, garage and presence are here; the other groups are `social` (colleagues,
 ## joint photos, inbox), `account` (profile page, status, avatar) and `raffle` (parking draw).
 
 signal balance_changed(balance: int)
@@ -12,21 +13,28 @@ signal car_changed(car_id: String)
 signal profile_changed(profile: BackendModels.Profile)
 ## Something happened that may have added messages to the inbox (a check-in, a finished task).
 signal inbox_may_have_changed
+## A call did not reach the server or the server failed; `error` is a ServerSession error key.
+signal request_failed(error: String)
 
-const SIMULATED_LATENCY: float = 0.12
+const LOGIN_SCENE: String = "res://scenes/login/login.tscn"
 
 var profile: BackendModels.Profile
+var server: ServerSession
 var social: BackendSocial
 var account: BackendAccount
 var raffle: BackendRaffle
 
-var _impl: MockBackend = MockBackend.new()
+var _account_loaded: bool = false
 
 
 func _ready() -> void:
-	social = BackendSocial.new(self, _impl.social)
-	account = BackendAccount.new(self, _impl.account)
-	raffle = BackendRaffle.new(self, _impl.raffle)
+	server = ServerSession.new()
+	server.name = "Server"
+	add_child(server)
+	server.session_lost.connect(_on_session_lost)
+	social = BackendSocial.new(self)
+	account = BackendAccount.new(self)
+	raffle = BackendRaffle.new(self)
 	for api: Node in [social, account, raffle]:
 		add_child(api)
 	if OS.is_debug_build() and OS.has_feature("pc"):
@@ -34,9 +42,50 @@ func _ready() -> void:
 		add_child(keys)
 
 
+## Calls an RPC; transport and server failures are reported through request_failed.
+func call_rpc(id: String, payload: Dictionary = {}) -> ServerSession.RpcResult:
+	var result: ServerSession.RpcResult = await server.call_rpc(id, payload)
+	if not result.ok and result.error in [ServerSession.ERROR_NETWORK, ServerSession.ERROR_SERVER]:
+		request_failed.emit(result.error)
+	return result
+
+
+# --- Account ---------------------------------------------------------------------
+
+
+## Loads the signed-in account: name and department, plus department names for colleague cards.
+## Resolves to "" or a ServerSession error key ("not_player" for the admin account).
+func load_account() -> String:
+	var identity: ServerSession.RpcResult = await server.call_rpc("get_profile")
+	if not identity.ok:
+		return identity.error
+	var departments: ServerSession.RpcResult = await server.call_rpc("list_departments")
+	if not departments.ok:
+		return departments.error
+	var names: Dictionary[String, String] = {}
+	for department: Variant in departments.data.get("departments", []):
+		if department is Dictionary:
+			names[str(department.get("id", ""))] = str(department.get("name", ""))
+	NotificationTexts.department_names = names
+	profile = null
+	_account_loaded = true
+	return ""
+
+
+func sign_out() -> void:
+	await server.sign_out()
+	_account_loaded = false
+	profile = null
+	get_tree().change_scene_to_file(LOGIN_SCENE)
+
+
+## Start of a game session: welcome bonus, absence fines and the lost streak for the morning card.
 func login() -> BackendModels.Profile:
-	await latency()
-	profile = _impl.login()
+	if not _account_loaded:
+		# A scene was opened directly (e.g. from the editor): sign in first.
+		_on_session_lost()
+	var result: ServerSession.RpcResult = await call_rpc("login")
+	profile = BackendParser.profile(result.data)
 	balance_changed.emit(profile.balance)
 	outfit_changed.emit(profile.outfit)
 	car_changed.emit(profile.car_id)
@@ -45,15 +94,44 @@ func login() -> BackendModels.Profile:
 	return profile
 
 
+## Re-reads the player's profile (status, avatar, streak, presence) after a change.
+func refresh_profile() -> void:
+	var result: ServerSession.RpcResult = await call_rpc("get_my_profile")
+	if not result.ok:
+		return
+	var fresh: BackendModels.Profile = BackendParser.profile(result.data)
+	_ensure_profile()
+	profile.display_name = fresh.display_name
+	profile.department = fresh.department
+	profile.status = fresh.status
+	profile.avatar = fresh.avatar
+	profile.streak_days = fresh.streak_days
+	profile.present_today = fresh.present_today
+	profile.in_office = fresh.in_office
+	profile.multiplier = fresh.multiplier
+	apply_balance(fresh.balance)
+	profile_changed.emit(profile)
+
+
+# --- Tasks and presence ----------------------------------------------------------
+
+
 func list_tasks() -> Array[BackendModels.TaskInfo]:
-	await latency()
-	return _impl.list_tasks()
+	var result: ServerSession.RpcResult = await call_rpc("list_tasks")
+	var tasks: Array[BackendModels.TaskInfo] = []
+	for entry: Variant in result.data.get("tasks", []):
+		if entry is Dictionary:
+			tasks.append(BackendParser.task(entry))
+	if result.ok and profile != null:
+		profile.in_office = bool(result.data.get("in_office", profile.in_office))
+	return tasks
 
 
 ## `proof` carries the minigame evidence (presence token, colleague id, score); the server validates it.
 func complete_task(task_id: String, success: bool, proof: Dictionary = {}) -> BackendModels.TaskResult:
-	await latency()
-	var result: BackendModels.TaskResult = _impl.complete_task(task_id, success, operation_key(), proof)
+	var payload: Dictionary = {"task_id": task_id, "success": success, "operation_key": operation_key(), "proof": proof}
+	var response: ServerSession.RpcResult = await call_rpc("complete_task", payload)
+	var result: BackendModels.TaskResult = BackendParser.task_result(response.data, response.error)
 	apply_balance(result.balance)
 	if result.ok:
 		refresh_profile()
@@ -62,56 +140,86 @@ func complete_task(task_id: String, success: bool, proof: Dictionary = {}) -> Ba
 
 
 func skip_task(task_id: String) -> BackendModels.ActionResult:
-	await latency()
-	return _impl.skip_task(task_id)
+	var response: ServerSession.RpcResult = await call_rpc("skip_task", {"task_id": task_id})
+	return BackendParser.action(response.data, response.error)
+
+
+## Entry code scanned again after the check-in task (e.g. back from lunch).
+func check_in(token: String) -> BackendModels.ActionResult:
+	return await _presence_action("office_check_in", {"token": token})
+
+
+## Exit code: tasks and room codes stop counting until the next entry.
+func check_out(token: String) -> BackendModels.ActionResult:
+	return await _presence_action("office_check_out", {"token": token})
+
+
+## Static room code: accepted only inside the office.
+func enter_room(room_id: String) -> BackendModels.ActionResult:
+	var response: ServerSession.RpcResult = await call_rpc("enter_room", {"room_id": room_id})
+	return BackendParser.action(response.data, response.error)
+
+
+func _presence_action(id: String, payload: Dictionary) -> BackendModels.ActionResult:
+	var response: ServerSession.RpcResult = await call_rpc(id, payload)
+	var result: BackendModels.ActionResult = BackendParser.action(response.data, response.error)
+	if result.ok:
+		await refresh_profile()
+	return result
+
+
+# --- Shop, wardrobe, garage --------------------------------------------------------
 
 
 func get_shop() -> BackendModels.ShopState:
-	await latency()
-	return _impl.get_shop()
+	var response: ServerSession.RpcResult = await call_rpc("get_shop")
+	return BackendParser.shop(response.data)
 
 
 func buy(offer_id: String) -> BackendModels.PurchaseResult:
-	await latency()
-	var result: BackendModels.PurchaseResult = _impl.buy(offer_id, operation_key())
+	var response: ServerSession.RpcResult = await call_rpc("buy", {"offer_id": offer_id, "operation_key": operation_key()})
+	var result: BackendModels.PurchaseResult = BackendParser.purchase(response.data, response.error)
 	apply_balance(result.balance)
 	return result
 
 
 func get_wardrobe() -> BackendModels.WardrobeState:
-	await latency()
-	return _impl.get_wardrobe()
+	var response: ServerSession.RpcResult = await call_rpc("get_wardrobe")
+	return BackendParser.wardrobe(response.data)
 
 
 func save_outfit(outfit: Dictionary) -> BackendModels.ActionResult:
-	await latency()
-	var result: BackendModels.ActionResult = _impl.save_outfit(outfit)
+	var clean: Dictionary = {}
+	for key: Variant in outfit:
+		clean[str(key)] = str(outfit[key])
+	var response: ServerSession.RpcResult = await call_rpc("save_outfit", {"outfit": clean})
+	var result: BackendModels.ActionResult = BackendParser.action(response.data, response.error)
 	if result.ok:
 		_ensure_profile()
-		profile.outfit = _impl.get_outfit()
+		profile.outfit = BackendParser.outfit(clean)
 		outfit_changed.emit(profile.outfit)
 	return result
 
 
 func get_garage() -> BackendModels.GarageState:
-	await latency()
-	return _impl.get_garage()
+	var response: ServerSession.RpcResult = await call_rpc("get_garage")
+	return BackendParser.garage(response.data)
 
 
 func buy_car(car_id: String) -> BackendModels.PurchaseResult:
-	await latency()
-	var result: BackendModels.PurchaseResult = _impl.buy_car(car_id, operation_key())
+	var response: ServerSession.RpcResult = await call_rpc("buy_car", {"car_id": car_id, "operation_key": operation_key()})
+	var result: BackendModels.PurchaseResult = BackendParser.purchase(response.data, response.error)
 	apply_balance(result.balance)
 	return result
 
 
 func select_car(car_id: String) -> BackendModels.ActionResult:
-	await latency()
-	var result: BackendModels.ActionResult = _impl.select_car(car_id)
-	if result.ok:
+	var response: ServerSession.RpcResult = await call_rpc("select_car", {"car_id": car_id})
+	var result: BackendModels.ActionResult = BackendParser.action(response.data, response.error)
+	if result.ok and response.data.get("car") is Dictionary:
+		var car: Dictionary = response.data["car"]
 		_ensure_profile()
 		profile.car_id = car_id
-		var car: Dictionary = _impl.get_car(car_id)
 		profile.car_name = str(car.get("name", car_id))
 		profile.car_speed_kmh = int(car.get("speed_kmh", 110))
 		car_changed.emit(car_id)
@@ -123,8 +231,8 @@ func select_car(car_id: String) -> BackendModels.ActionResult:
 
 ## Reminders and announcements for the OS scheduler, replacing any earlier plan.
 func get_notification_plan() -> Array[BackendModels.PlannedNotification]:
-	await latency()
-	return _impl.get_notification_plan()
+	var response: ServerSession.RpcResult = await call_rpc("get_notification_plan")
+	return BackendParser.notification_plan(response.data)
 
 
 # --- Local state -----------------------------------------------------------------
@@ -142,32 +250,14 @@ func get_user_id() -> String:
 	return profile.user_id if profile != null else ""
 
 
-## DEV-ONLY access to the mock for debug keys and the automated tour.
-func get_mock() -> MockBackend:
-	return _impl
-
-
-## Takes the balance the server reported and tells the UI.
+## Takes the balance the server reported and tells the UI. Negative = not reported.
 func apply_balance(balance: int) -> void:
+	if balance < 0:
+		return
 	_ensure_profile()
 	if profile.balance != balance:
 		profile.balance = balance
 		balance_changed.emit(balance)
-
-
-## Re-reads the player's profile (status, avatar, streak) after a change.
-func refresh_profile() -> void:
-	var fresh: BackendModels.Profile = _impl.account.profile()
-	_ensure_profile()
-	profile.display_name = fresh.display_name
-	profile.department = fresh.department
-	profile.status = fresh.status
-	profile.avatar = fresh.avatar
-	profile.streak_days = fresh.streak_days
-	profile.present_today = fresh.present_today
-	profile.multiplier = fresh.multiplier
-	apply_balance(fresh.balance)
-	profile_changed.emit(profile)
 
 
 ## Idempotency key for balance-changing calls.
@@ -175,8 +265,20 @@ func operation_key() -> String:
 	return "%d-%08x" % [Time.get_ticks_usec(), randi()]
 
 
-func latency() -> void:
-	await get_tree().create_timer(SIMULATED_LATENCY).timeout
+## DEV-ONLY: calls a dev RPC (the server must run with DEV_MODE=true).
+func dev_call(id: String, payload: Dictionary = {}) -> ServerSession.RpcResult:
+	assert(OS.is_debug_build())
+	var result: ServerSession.RpcResult = await server.call_rpc(id, payload)
+	if not result.ok:
+		push_warning("[dev] %s failed: %s (is DEV_MODE=true on the server?)" % [id, result.error])
+	return result
+
+
+func _on_session_lost() -> void:
+	_account_loaded = false
+	var current: Node = get_tree().current_scene
+	if current == null or current.scene_file_path != LOGIN_SCENE:
+		get_tree().change_scene_to_file.call_deferred(LOGIN_SCENE)
 
 
 func _ensure_profile() -> void:

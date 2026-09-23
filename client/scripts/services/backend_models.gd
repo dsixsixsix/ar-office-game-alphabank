@@ -1,6 +1,6 @@
 class_name BackendModels
 extends RefCounted
-## Data returned by the Backend service. Mirrors the planned Nakama RPC payloads.
+## Data returned by the Backend service, parsed from the server's RPC answers by BackendParser.
 
 
 class Profile:
@@ -18,6 +18,8 @@ class Profile:
 	## Office workdays in a row. Today counts once the player has checked in.
 	var streak_days: int = 0
 	var present_today: bool = false
+	## Scanned the entry code and not the exit code yet: tasks and room codes count only now.
+	var in_office: bool = false
 	## Reward multiplier for the current streak, e.g. 1.5.
 	var multiplier: float = 1.0
 	var welcome_bonus: int = 0
@@ -164,11 +166,13 @@ class Colleague:
 	var user_id: String = ""
 	var name: String = ""
 	var department: String = ""
-	## Avatar template id (an NPC look) or AvatarCatalog.CUSTOM.
+	## Avatar template id or AvatarCatalog.CUSTOM.
 	var avatar: String = ""
 	var status: String = ""
+	## Room where the colleague scanned a door code last today; empty when unknown.
 	var floor_id: StringName = &"hq"
 	var room: StringName = &""
+	## In the office now (entered and not left).
 	var present: bool = false
 
 
@@ -202,6 +206,7 @@ class ProfilePage:
 	## Oldest first, up to today; covers the calendar range.
 	var days: Array[DayRecord] = []
 	var today: int = 0
+	var has_custom_avatar: bool = false
 
 
 class InboxItem:

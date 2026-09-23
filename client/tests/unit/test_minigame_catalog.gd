@@ -1,12 +1,14 @@
 extends GdUnitTestSuite
-## Every task in the mock content points at an existing minigame, and fallbacks need no sensors.
+## Every task of the server content (server/content/tasks.json) points at an existing minigame and
+## a free cell of its room on the client's map, and fallbacks need no sensors.
 
-const TASKS_PATH: String = "res://data/tasks.json"
+const TASKS_PATH: String = "../server/content/tasks.json"
 const SCREEN_ONLY: Array[String] = ["check_in", "coffee", "bubble_wrap", "paper_sort", "alfa_red"]
 
 
 func _tasks() -> Array:
-	var parsed: Variant = JSON.parse_string(FileAccess.get_file_as_string(TASKS_PATH))
+	var path: String = ProjectSettings.globalize_path("res://").path_join(TASKS_PATH)
+	var parsed: Variant = JSON.parse_string(FileAccess.get_file_as_string(path))
 	return (parsed as Dictionary)["tasks"]
 
 

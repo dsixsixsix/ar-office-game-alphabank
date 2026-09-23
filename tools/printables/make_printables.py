@@ -3,7 +3,7 @@
 Room ids and names are read from the game sources, so the posters always match the office map:
   - client/scripts/world/office_layout.gd  (add_room calls)
   - client/localization/strings.csv        (room names)
-  - client/data/tasks.json                 (scavenger hunt markers)
+  - server/content/tasks.json               (scavenger hunt markers)
 
 Usage:
     pip install -r tools/requirements.txt
@@ -27,7 +27,7 @@ from PIL import Image, ImageDraw, ImageFont
 ROOT = Path(__file__).resolve().parents[2]
 LAYOUT = ROOT / "client/scripts/world/office_layout.gd"
 STRINGS = ROOT / "client/localization/strings.csv"
-TASKS = ROOT / "client/data/tasks.json"
+TASKS = ROOT / "server/content/tasks.json"
 QR_SCHEME = "alfaoffice://room/"
 PAGE = (874, 1240)  # A5 at 150 dpi
 RED = (239, 49, 36)

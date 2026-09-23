@@ -4,7 +4,11 @@
 #   ./run.sh                          Pixel 8
 #   ./run.sh --device iphone_15
 #   ./run.sh --device iphone_17_pro --screen-dpi 127
-#   ./run.sh --office-screen          reception screen with the rotating presence QR code
+#   ./run.sh --office-screen          reception screen with the rotating entry and exit QR codes
+#   ./run.sh --server http://192.168.1.5:7350
+#
+# The game always needs the Nakama server (server/, `docker compose up`), 127.0.0.1:7350 by default.
+# The office screen gets its codes with the server's HTTP key, read from server/.env.
 set -euo pipefail
 
 root="$(cd "$(dirname "$0")" && pwd)"
@@ -14,9 +18,10 @@ devices="pixel_8 iphone_15 iphone_17_pro iphone_17_pro_max galaxy_s24 android_hd
 device="pixel_8"
 screen_dpi=""
 office_screen=false
+game_args=()
 
 usage() {
-	echo "Usage: $0 [--device <id>] [--screen-dpi <value>] [--office-screen]"
+	echo "Usage: $0 [--device <id>] [--screen-dpi <value>] [--office-screen] [--server <url>]"
 	echo "Devices: $devices"
 }
 
@@ -25,6 +30,7 @@ while [[ $# -gt 0 ]]; do
 		--device) device="${2:?}"; shift 2 ;;
 		--screen-dpi) screen_dpi="${2:?}"; shift 2 ;;
 		--office-screen) office_screen=true; shift ;;
+		--server) game_args+=("--server=${2:?}"); shift 2 ;;
 		-h | --help) usage; exit 0 ;;
 		*) usage >&2; exit 1 ;;
 	esac
@@ -58,10 +64,24 @@ fi
 args=(--path "$project")
 if $office_screen; then
 	args+=(res://scenes/kiosk/office_screen.tscn --resolution 720x960)
-elif [[ "$device" != "desktop" ]]; then
-	args+=(-- "--device=$device")
-	if [[ -n "$screen_dpi" ]]; then
-		args+=("--screen-dpi=$screen_dpi")
+	key="$(grep -E '^NAKAMA_HTTP_KEY=' "$root/server/.env" 2>/dev/null | cut -d= -f2- || true)"
+	if [[ -n "$key" ]]; then
+		game_args+=("--kiosk-key=$key")
+	else
+		echo "NAKAMA_HTTP_KEY not found in server/.env: the office screen cannot get its codes." >&2
+	fi
+	if [[ ${#game_args[@]} -gt 0 ]]; then
+		args+=(-- "${game_args[@]}")
+	fi
+else
+	if [[ "$device" != "desktop" ]]; then
+		game_args+=("--device=$device")
+		if [[ -n "$screen_dpi" ]]; then
+			game_args+=("--screen-dpi=$screen_dpi")
+		fi
+	fi
+	if [[ ${#game_args[@]} -gt 0 ]]; then
+		args+=(-- "${game_args[@]}")
 	fi
 fi
 

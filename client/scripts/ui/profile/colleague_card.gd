@@ -1,6 +1,6 @@
 class_name ColleagueCard
 extends PanelContainer
-## Who to find for a task: avatar, name, department and where they usually sit.
+## Who to find for a task: avatar, name, department and the room where they were seen last.
 
 
 func _init(colleague: BackendModels.Colleague, width: float) -> void:

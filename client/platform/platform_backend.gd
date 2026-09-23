@@ -94,6 +94,11 @@ func cancel_all_notifications() -> void:
 	pass
 
 
+## Web only: host name of the page, see PlatformServices.get_page_host().
+func page_host() -> String:
+	return ""
+
+
 ## Lets the player choose a picture. Resolves to null when cancelled or unreadable.
 func pick_image() -> Image:
 	if not DisplayServer.has_feature(DisplayServer.FEATURE_NATIVE_DIALOG_FILE):

@@ -23,6 +23,7 @@ func _init(side: float = 32.0) -> void:
 
 func _ready() -> void:
 	Appearance.changed.connect(_on_appearance_changed)
+	Backend.account.custom_avatar_loaded.connect(_on_custom_avatar_loaded)
 
 
 func show_avatar(p_avatar_id: String, p_user_id: String = "") -> void:
@@ -30,6 +31,12 @@ func show_avatar(p_avatar_id: String, p_user_id: String = "") -> void:
 	user_id = p_user_id
 	_texture = Backend.account.get_custom_avatar(user_id) if avatar_id == AvatarCatalog.CUSTOM else AvatarCatalog.template_texture(avatar_id)
 	queue_redraw()
+
+
+## Uploaded pictures are downloaded on first use; redraw when ours arrives.
+func _on_custom_avatar_loaded(loaded_user_id: String) -> void:
+	if avatar_id == AvatarCatalog.CUSTOM and loaded_user_id == user_id:
+		show_avatar(avatar_id, user_id)
 
 
 func _on_appearance_changed() -> void:

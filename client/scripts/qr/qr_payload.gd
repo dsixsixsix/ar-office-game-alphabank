@@ -1,15 +1,18 @@
 class_name QrPayload
 extends RefCounted
-## Game QR codes. Three kinds share one URI scheme:
-##   alfaoffice://room/<room_id>        static code at a room door, moves the player to that room
-##   alfaoffice://presence/<token>      rotating code on the office screen, proof of presence
+## Game QR codes. Four kinds share one URI scheme:
+##   alfaoffice://room/<room_id>        static code at a room door; counts only inside the office
+##   alfaoffice://presence/<token>      rotating entry code on the office screen, proof of presence
+##   alfaoffice://checkout/<token>      rotating exit code on the office screen
 ##   alfaoffice://user/<user_id>        profile code shown on a colleague's phone
 ## Wi-Fi join codes are infrastructure and are not parsed by the game.
 
-enum Kind { UNKNOWN, ROOM, PRESENCE, USER }
+enum Kind { UNKNOWN, ROOM, PRESENCE, USER, CHECKOUT }
 
 const SCHEME: String = "alfaoffice://"
-const KIND_NAMES: Dictionary[Kind, String] = {Kind.ROOM: "room", Kind.PRESENCE: "presence", Kind.USER: "user"}
+const KIND_NAMES: Dictionary[Kind, String] = {
+	Kind.ROOM: "room", Kind.PRESENCE: "presence", Kind.USER: "user", Kind.CHECKOUT: "checkout",
+}
 const MAX_VALUE_LENGTH: int = 128
 
 var kind: Kind = Kind.UNKNOWN
@@ -45,6 +48,10 @@ static func user(user_id: String) -> String:
 
 static func presence(token: String) -> String:
 	return make(Kind.PRESENCE, token)
+
+
+static func checkout(token: String) -> String:
+	return make(Kind.CHECKOUT, token)
 
 
 func is_valid() -> bool:

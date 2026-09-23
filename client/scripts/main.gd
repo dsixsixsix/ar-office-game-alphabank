@@ -64,6 +64,7 @@ func _ready() -> void:
 	_corner = PlayerCorner.attach(self, _hud)
 	Notifications.banner_pressed.connect(_on_banner_pressed)
 	Presence.zone_changed.connect(_on_zone_changed)
+	Backend.request_failed.connect(_on_request_failed)
 	_task_panel.go_requested.connect(_go_to_task)
 	_task_panel.skip_requested.connect(_skip_task)
 	if Backend.profile == null:
@@ -307,6 +308,13 @@ func _scan_code() -> void:
 			if floor_id == &"":
 				_hud.flash_message(tr("QR_UNKNOWN_ROOM"))
 				return
+			# Door codes are static, so they count only after the entry code at the reception.
+			_busy = true
+			var entered: BackendModels.ActionResult = await Backend.enter_room(String(room_id))
+			_busy = false
+			if not entered.ok:
+				_hud.flash_message(tr("ERROR_" + entered.error.to_upper()))
+				return
 			Presence.set_zone_from_qr(room_id)
 			if floor_id != OfficeFloors.current:
 				# The player is physically on another floor: the game follows them there.
@@ -315,18 +323,34 @@ func _scan_code() -> void:
 				return
 			_walk_to_room(room_id)
 		QrPayload.Kind.PRESENCE:
-			_start_check_in()
+			await _start_check_in(payload.value)
+		QrPayload.Kind.CHECKOUT:
+			_busy = true
+			var left: BackendModels.ActionResult = await Backend.check_out(payload.value)
+			_busy = false
+			_hud.flash_message(tr("QR_CHECKED_OUT") if left.ok else tr("ERROR_" + left.error.to_upper()))
 		QrPayload.Kind.USER:
 			_hud.flash_message(tr("QR_COLLEAGUE_HINT"))
 
 
-## The office screen code was scanned outside the task: walk to the check-in task and start it.
-func _start_check_in() -> void:
+## The entry code was scanned outside the task. The first entry of the day is the check-in task
+## (it pays a reward): walk to it and start it. Later entries, e.g. after lunch, only reopen the office.
+func _start_check_in(token: String) -> void:
 	for task: BackendModels.TaskInfo in _tasks:
 		if task.minigame == CHECK_IN_MINIGAME and not task.is_closed():
 			_go_to_task(task)
 			return
-	_hud.flash_message(tr("QR_ALREADY_CHECKED_IN"))
+	if Backend.profile != null and Backend.profile.in_office:
+		_hud.flash_message(tr("QR_ALREADY_CHECKED_IN"))
+		return
+	_busy = true
+	var entered: BackendModels.ActionResult = await Backend.check_in(token)
+	_busy = false
+	_hud.flash_message(tr("QR_BACK_IN_OFFICE") if entered.ok else tr("ERROR_" + entered.error.to_upper()))
+
+
+func _on_request_failed(error: String) -> void:
+	_hud.flash_message(tr("ERROR_" + error.to_upper()))
 
 
 func _on_zone_changed(room_id: StringName) -> void:

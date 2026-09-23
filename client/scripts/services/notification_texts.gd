@@ -3,6 +3,9 @@ extends RefCounted
 ## Player-facing text of inbox messages and scheduled notifications. The server sends kinds and
 ## parameters; wording and language live on the client.
 
+## Department id -> name from the server. Admin-made departments have no translation key.
+static var department_names: Dictionary[String, String] = {}
+
 
 static func inbox_text(item: BackendModels.InboxItem) -> String:
 	var p: Dictionary = item.params
@@ -45,7 +48,10 @@ static func title() -> String:
 
 
 static func department(department_id: String) -> String:
-	return _tr("DEPT_" + department_id.to_upper()) if not department_id.is_empty() else ""
+	if department_id.is_empty():
+		return ""
+	var known: String = department_names.get(department_id, "")
+	return known if not known.is_empty() else _tr("DEPT_" + department_id.to_upper())
 
 
 static func _tr(key: String) -> String:

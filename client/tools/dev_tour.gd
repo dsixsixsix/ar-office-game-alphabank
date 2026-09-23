@@ -1,11 +1,9 @@
 extends Node
 ## Dev check: walks through home, commute intro and office, driving the scenes directly and saving
-## screenshots. The mock backend save is restored afterwards.
+## screenshots. Plays as the account signed in on this computer (sign in through the game once) on
+## a server with DEV_MODE=true; the tour changes that account's progress, so use a test account.
 ## Run (GUI): godot --path client res://tools/dev_tour.tscn -- --device=pixel_8 --out=<dir> [--shot-scale=2]
 ## --shot-scale below 1 shrinks screenshots smoothly, 1 and above enlarges them with crisp pixels.
-
-const SAVE: String = "user://mock_backend.json"
-const BACKUP: String = "user://mock_backend.tour_backup.json"
 
 var _out: String = ""
 var _shot_scale: float = 0.5
@@ -37,8 +35,10 @@ func _start() -> void:
 	var placeholder: Node = Node.new()
 	tree.root.add_child(placeholder)
 	tree.current_scene = placeholder
-	if FileAccess.file_exists(SAVE):
-		DirAccess.copy_absolute(ProjectSettings.globalize_path(SAVE), ProjectSettings.globalize_path(BACKUP))
+	if not Backend.server.restore() or not (await Backend.load_account()).is_empty():
+		printerr("dev tour: sign in through the game once, then run the tour again")
+		tree.quit(1)
+		return
 	await _wait(0.5)
 	await _morning_tour()
 	await _home_tour()
@@ -48,9 +48,6 @@ func _start() -> void:
 	await _social_tour()
 	await _analytics_tour()
 	await _office_screen_tour()
-	if FileAccess.file_exists(BACKUP):
-		DirAccess.copy_absolute(ProjectSettings.globalize_path(BACKUP), ProjectSettings.globalize_path(SAVE))
-		DirAccess.remove_absolute(ProjectSettings.globalize_path(BACKUP))
 	tree.quit()
 
 
@@ -122,7 +119,7 @@ func _commute_tour() -> void:
 	await _shot("c3_traffic")
 	await _wait(4.5)
 	await _shot("c4_arrival")
-	Backend.get_mock().store.credit(6000, "dev_tour", "tour")
+	await Backend.dev_call("dev_grant_coins", {"amount": 6000})
 	var result: BackendModels.PurchaseResult = await Backend.buy_car("audi_rs6")
 	if result.status == BackendModels.PurchaseResult.Status.GRANTED:
 		await Backend.select_car("audi_rs6")
@@ -167,16 +164,14 @@ func _office_tour() -> void:
 	await _wait(1.0)
 	await _shot("o8_tasks_difficulty")
 	(office.get("_task_panel") as TaskPanel).close_panel()
-	# Close every task on the mock server so the "Go home" button appears.
-	# Check-in goes first: the server accepts other tasks only after a valid presence token.
-	var mock: MockBackend = Backend.get_mock()
-	var token: String = QrPayload.parse(DevQrCodes.current_presence_code()).value
-	mock.complete_task("check_in", true, "tour-check-in-%d" % Time.get_ticks_usec(), {"presence_token": token})
+	# Close every task so the "Go home" button appears. Check-in goes first: the server accepts other
+	# tasks only inside the office. Tasks with a colleague stay open when nobody else is in the office.
+	await _check_in()
 	for task: BackendModels.TaskInfo in office.get("_tasks"):
 		if task.skippable:
-			mock.skip_task(task.id)
-		else:
-			mock.complete_task(task.id, true, "tour-%s-%d" % [task.id, Time.get_ticks_usec()])
+			await Backend.skip_task(task.id)
+		elif task.assignment.is_empty():
+			await Backend.complete_task(task.id, true, {"colleague_ids": []})
 	office.call("_refresh_tasks")
 	await _wait(1.0)
 	await _teleport(office, Vector2i(24, 23))
@@ -237,11 +232,8 @@ func _minigame_tour(office: Node) -> void:
 ## Photo with a colleague, inbox, profile and the parking draw on a fresh office day.
 func _social_tour() -> void:
 	OfficeFloors.reset()
-	var mock: MockBackend = Backend.get_mock()
-	var today: String = str(mock.store.today())
-	(mock.store.state["skipped"] as Dictionary)[today] = []
-	var token: String = QrPayload.parse(DevQrCodes.current_presence_code()).value
-	mock.complete_task("check_in", true, "tour-social-%d" % Time.get_ticks_usec(), {"presence_token": token})
+	await Backend.dev_call("dev_reset_day")
+	await _check_in()
 	get_tree().change_scene_to_file("res://scenes/main.tscn")
 	await _wait(2.5)
 	var office: Node = get_tree().current_scene
@@ -265,10 +257,8 @@ func _social_tour() -> void:
 		await _wait(2.6)
 		await _shot("s4_photo_sent")
 	desktop.set("face_count", 0)
-	mock.social.dev_incoming_photo_request()
 	Notifications.poll()
 	await _wait(1.2)
-	await _shot("s5_banner")
 	var corner: PlayerCorner = office.get("_corner")
 	corner.open_inbox()
 	await _wait(1.2)
@@ -290,15 +280,22 @@ func _social_tour() -> void:
 	await _wait(0.4)
 	await _shot("s10_profile_history")
 	profile.close_panel()
-	await _raffle_tour(office, mock)
+	await _raffle_tour(office)
 
 
-func _raffle_tour(office: Node, mock: MockBackend) -> void:
-	var today: int = mock.store.today()
-	for day: int in 10:
-		(mock.store.state["presence_days"] as Dictionary)[str(today - day)] = true
-	mock.store.credit(3000, "dev_tour", "tour")
-	mock.raffle.dev_schedule(2 * 86400 + 5 * 3600 + 17 * 60)
+## Entry code from the dev server, then the check-in task (or a plain entry if it is done today).
+func _check_in() -> void:
+	var codes: ServerSession.RpcResult = await Backend.dev_call("dev_presence_codes")
+	var token: String = str(codes.data.get("entry", ""))
+	var result: BackendModels.TaskResult = await Backend.complete_task("check_in", true, {"presence_token": token})
+	if not result.ok:
+		await Backend.check_in(token)
+
+
+func _raffle_tour(office: Node) -> void:
+	await Backend.dev_call("dev_set_office_days", {"days": 10})
+	await Backend.dev_call("dev_grant_coins", {"amount": 3000})
+	await Backend.dev_call("dev_schedule_raffle", {"seconds": 2 * 86400 + 5 * 3600 + 17 * 60})
 	office.call("_open_shop")
 	var shop: ShopPanel = office.get("_shop_panel")
 	await _wait(0.5)
@@ -308,12 +305,11 @@ func _raffle_tour(office: Node, mock: MockBackend) -> void:
 	await shop.call("_on_buy_ticket")
 	await _wait(0.6)
 	await _shot("r2_raffle_ticket")
-	var state: BackendModels.RaffleState = await Backend.raffle.get_raffle()
-	((mock.store.state["raffles"] as Dictionary)[state.draw_id] as Dictionary)["draw_at"] = mock.store.now() - 1
+	await Backend.dev_call("dev_draw_now")
 	await shop.call("_reload")
 	await _wait(0.6)
 	await _shot("r3_raffle_results")
-	state = await Backend.raffle.get_raffle()
+	var state: BackendModels.RaffleState = await Backend.raffle.get_raffle()
 	shop.call("_watch_draw", state)
 	await _wait(2.0)
 	await _shot("r4_roulette_spin")
@@ -325,7 +321,7 @@ func _raffle_tour(office: Node, mock: MockBackend) -> void:
 			child.queue_free()
 	await _wait(0.8)
 	shop.visible = false
-	mock.store.state["dev_raffle_at"] = 0
+	await Backend.dev_call("dev_clear_raffle")
 
 
 ## The product analytics floor: rooms, NPCs and the meet-a-colleague tasks.
