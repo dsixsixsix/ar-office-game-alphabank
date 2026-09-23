@@ -39,7 +39,7 @@ var _session: NakamaSession
 
 
 func _ready() -> void:
-	config = ServerConfig.from_environment(OS.get_cmdline_user_args(), PlatformServices.get_page_host())
+	config = ServerConfig.from_environment(OS.get_cmdline_user_args(), PlatformServices.get_page_origin())
 	_client = Nakama.create_client(config.server_key, config.host, config.port, config.scheme, TIMEOUT_SECONDS, NakamaLogger.LOG_LEVEL.ERROR)
 
 

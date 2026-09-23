@@ -65,6 +65,7 @@ locale/test="ru"
 server/scheme="http"
 server/host="127.0.0.1"
 server/port=7350
+server/tls_port=7443
 server/key="defaultkey"
 
 [rendering]

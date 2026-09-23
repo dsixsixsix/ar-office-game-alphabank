@@ -462,6 +462,7 @@ native/
 tools/          локальный тулчейн, скрипты сборки, печатные материалы
 run.ps1         запуск на компьютере с эмуляцией телефона (Windows)
 run.sh          то же для macOS
+run-lan.sh      HTTPS в локальной сети: сертификаты, веб-сборка, админка, Caddy (macOS)
 run-office-screen.cmd  экран у ресепшна с кодами входа и выхода
 ```
 
@@ -486,6 +487,10 @@ cd admin
 npm install
 npm run dev             # http://localhost:5173, вход под ADMIN_USERNAME / ADMIN_PASSWORD
 ```
+
+Для теста с телефонами в одной Wi-Fi сети есть `./run-lan.sh`: он делает HTTPS-сертификаты для адреса
+Mac, собирает веб-версию и админку и поднимает Caddy перед Nakama. Подробности и чек-лист встречи:
+`docs/web-testing-on-iphone.md`.
 
 Админка обращается к Nakama на том же хосте, с которого открыта. Другой адрес задаётся в `admin/.env`
 (см. `admin/.env.example`).

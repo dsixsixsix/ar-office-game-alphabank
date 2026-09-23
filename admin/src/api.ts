@@ -3,11 +3,13 @@ import { Client, Session } from "@heroiclabs/nakama-js";
 // Talks to the Nakama Go module (server/modules). Every call is an admin RPC checked on the server.
 
 const env = import.meta.env;
+// Opened over HTTPS (Caddy on the LAN) the panel may call only HTTPS: Nakama is proxied on 7443.
+const pageIsHttps = window.location.protocol === "https:";
 const client = new Client(
   env.VITE_NAKAMA_SERVER_KEY ?? "defaultkey",
   env.VITE_NAKAMA_HOST || window.location.hostname,
-  env.VITE_NAKAMA_PORT ?? "7350",
-  env.VITE_NAKAMA_SSL === "true",
+  env.VITE_NAKAMA_PORT ?? (pageIsHttps ? "7443" : "7350"),
+  env.VITE_NAKAMA_SSL ? env.VITE_NAKAMA_SSL === "true" : pageIsHttps,
   10000,
   // Sessions last a week and are not refreshed: after that the admin signs in again.
   false,

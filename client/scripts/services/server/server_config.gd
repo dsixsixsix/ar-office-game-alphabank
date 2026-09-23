@@ -3,10 +3,12 @@ extends RefCounted
 ## Where the Nakama server is. Defaults come from the project settings (office_game/server/*).
 ## The game always needs the server. Overrides, strongest first:
 ##   --server=http://192.168.1.5:7350  another server;
-##   web build                       the host the page was opened from, with the configured port.
+##   web build                       the host the page was opened from; over HTTPS the TLS proxy port
+##                                   (office_game/server/tls_port, Caddy in front of Nakama).
 
 const SETTING_PREFIX: String = "office_game/server/"
 const DEFAULT_PORT: int = 7350
+const DEFAULT_TLS_PORT: int = 7443
 
 var scheme: String = "http"
 var host: String = "127.0.0.1"
@@ -14,14 +16,20 @@ var port: int = DEFAULT_PORT
 var server_key: String = "defaultkey"
 
 
-static func from_environment(user_args: PackedStringArray, page_host: String) -> ServerConfig:
+static func from_environment(user_args: PackedStringArray, page_origin: String) -> ServerConfig:
 	var config: ServerConfig = ServerConfig.new()
 	config.scheme = str(ProjectSettings.get_setting(SETTING_PREFIX + "scheme", config.scheme))
 	config.host = str(ProjectSettings.get_setting(SETTING_PREFIX + "host", config.host))
 	config.port = int(ProjectSettings.get_setting(SETTING_PREFIX + "port", config.port))
 	config.server_key = str(ProjectSettings.get_setting(SETTING_PREFIX + "key", config.server_key))
-	if not page_host.is_empty():
-		config.host = page_host
+	if not page_origin.is_empty():
+		var parts: PackedStringArray = page_origin.split("://", true, 1)
+		if parts.size() == 2 and not parts[1].is_empty():
+			config.host = parts[1]
+			# A page opened over HTTPS may call only HTTPS: the proxy serves Nakama there.
+			if parts[0] == "https":
+				config.scheme = "https"
+				config.port = int(ProjectSettings.get_setting(SETTING_PREFIX + "tls_port", DEFAULT_TLS_PORT))
 	for arg: String in user_args:
 		if arg.begins_with("--server="):
 			config.apply_url(arg.trim_prefix("--server="))

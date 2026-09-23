@@ -94,8 +94,8 @@ func cancel_all_notifications() -> void:
 	pass
 
 
-## Web only: host name of the page, see PlatformServices.get_page_host().
-func page_host() -> String:
+## Web only: scheme and host of the page, see PlatformServices.get_page_origin().
+func page_origin() -> String:
 	return ""
 
 

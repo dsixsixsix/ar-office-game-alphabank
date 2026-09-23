@@ -63,5 +63,24 @@ services:
       timeout: 3s
       retries: 10
 
+  # HTTPS in the Wi-Fi network for phones: ./run-lan.sh (profile "lan").
+  caddy:
+    image: caddy:2-alpine
+    profiles: ["lan"]
+    restart: unless-stopped
+    depends_on:
+      - nakama
+    volumes:
+      - ./caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./certs:/certs:ro
+      - ./certs/public:/srv/ca:ro
+      - ../build/web:/srv/web:ro
+      - ../admin/dist:/srv/admin:ro
+    ports:
+      - "8443:8443"
+      - "7443:7443"
+      - "5443:5443"
+      - "8080:8080"
+
 volumes:
   postgres-data:

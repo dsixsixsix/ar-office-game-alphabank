@@ -1,0 +1,34 @@
+# HTTPS in the local network (docker compose --profile lan). Certificates: tools/lan/make-certs.sh.
+#   8443  web build of the game (build/web)
+#   7443  Nakama API (the game and the admin panel call it from HTTPS pages)
+#   5443  admin panel (admin/dist)
+#   8080  plain HTTP page with the CA certificate for phones
+{
+	auto_https off
+	admin off
+}
+
+:8443 {
+	tls /certs/server.crt /certs/server.key
+	root * /srv/web
+	header Cache-Control "no-cache"
+	file_server
+}
+
+:7443 {
+	tls /certs/server.crt /certs/server.key
+	reverse_proxy nakama:7350
+}
+
+:5443 {
+	tls /certs/server.crt /certs/server.key
+	root * /srv/admin
+	try_files {path} /index.html
+	file_server
+}
+
+:8080 {
+	root * /srv/ca
+	header /office-game-ca.cer Content-Type application/x-x509-ca-cert
+	file_server
+}

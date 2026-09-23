@@ -154,8 +154,8 @@ func cancel_all_notifications() -> void:
 	JavaScriptBridge.eval("window.alfaOffice.cancelAll()", true)
 
 
-func page_host() -> String:
-	return str(JavaScriptBridge.eval("window.location.hostname", true))
+func page_origin() -> String:
+	return str(JavaScriptBridge.eval("window.location.protocol + '//' + window.location.hostname", true))
 
 
 func pick_image() -> Image:

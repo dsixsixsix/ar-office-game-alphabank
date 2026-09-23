@@ -164,10 +164,10 @@ func pick_image() -> Image:
 	return await _backend.pick_image()
 
 
-## Host name of the page the web build was opened from (the server usually runs there too).
+## "https://host" of the page the web build was opened from (the server runs there too).
 ## Empty on native platforms.
-func get_page_host() -> String:
-	return _backend.page_host()
+func get_page_origin() -> String:
+	return _backend.page_origin()
 
 
 # --- Screen ----------------------------------------------------------------------
