@@ -124,7 +124,7 @@ export function StatsPanel({ actions }: { actions: DashboardActions }) {
                     <div className="player-name">{p.display_name}</div>
                     <code className="muted">{p.username}</code>
                   </td>
-                  <td>{departmentName(p.department_id)}</td>
+                  <td className="nowrap">{departmentName(p.department_id)}</td>
                   <td>
                     <PresenceBadge player={p} />
                   </td>

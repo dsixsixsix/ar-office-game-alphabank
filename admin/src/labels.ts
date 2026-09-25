@@ -39,6 +39,12 @@ export const SUSPICIOUS_LABELS: Record<string, string> = {
   daily_cap_reached: "Дневной лимит монет",
 };
 
+/** Actions in the suspicious log that are not tasks. */
+export const SUSPICIOUS_ACTIONS: Record<string, string> = {
+  office_check_in: "Вход в офис",
+  office_check_out: "Выход из офиса",
+};
+
 export const ROOM_LABELS: Record<string, string> = {
   reception: "Ресепшн",
   kitchen: "Кухня",

@@ -9,6 +9,7 @@ import {
   PHOTO_STATES,
   REWARD_STATES,
   ROOM_LABELS,
+  SUSPICIOUS_ACTIONS,
   label,
   suspiciousLabel,
 } from "./labels";
@@ -143,7 +144,7 @@ function TabButton({ tab, current, onSelect, children }: { tab: Tab; current: Ta
   );
 }
 
-const CALENDAR_WEEKS = 20;
+const CALENDAR_WEEKS = 26;
 const WEEKDAYS = ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"];
 
 /** Weeks as columns, Monday on top: office days, misses, excused days and weekends. */
@@ -498,7 +499,7 @@ function FraudTab({ stats, name }: { stats: Stats; name: (id: string) => string 
               {stats.suspicious.map((entry, i) => (
                 <tr key={`${entry.t}-${i}`}>
                   <td className="nowrap">{formatDateTime(entry.t)}</td>
-                  <td>{name(entry.task)}</td>
+                  <td>{SUSPICIOUS_ACTIONS[entry.task] ?? name(entry.task)}</td>
                   <td>{suspiciousLabel(entry.reason)}</td>
                 </tr>
               ))}

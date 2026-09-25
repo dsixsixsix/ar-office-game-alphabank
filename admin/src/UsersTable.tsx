@@ -42,7 +42,7 @@ export function UsersTable({ actions, users }: { actions: DashboardActions; user
             <tbody>
               {users.map((user) => (
                 <tr key={user.id} className={user.banned ? "banned" : ""}>
-                  <td>{user.display_name}</td>
+                  <td className="nowrap">{user.display_name}</td>
                   <td>
                     <code>{user.username}</code>
                   </td>
