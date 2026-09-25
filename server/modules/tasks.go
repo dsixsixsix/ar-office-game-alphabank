@@ -238,9 +238,13 @@ func (tx *gameTx) taskError(task *Task, success bool, proof taskProof) (string, 
 	case contains(dayList(state.Pending, tx.today), task.ID):
 		return "pending_confirmation", nil
 	case task.Minigame == presenceMinigame:
+		if problem := tx.networkError(); problem != "" {
+			return problem, nil
+		}
 		return tx.useToken(purposeEntry, proof.PresenceToken), nil
-	case !inOffice(state, tx.today):
-		return "presence_required", nil
+	}
+	if problem := tx.presenceError(); problem != "" {
+		return problem, nil
 	}
 	return tx.verifySocial(task, proof)
 }

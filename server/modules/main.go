@@ -41,6 +41,12 @@ func InitModule(ctx context.Context, logger runtime.Logger, db *sql.DB, nk runti
 		return errors.New("set PRESENCE_SECRET (16+ characters)")
 	}
 	devMode = env["DEV_MODE"] == "true"
+	if officeNetworks, err = parseOfficeNetworks(env["OFFICE_NETWORKS"]); err != nil {
+		return err
+	}
+	if len(officeNetworks) == 0 {
+		logger.Warn("OFFICE_NETWORKS is empty: presence is not checked against the office network")
+	}
 	if err := registerAuthHooks(initializer); err != nil {
 		return err
 	}

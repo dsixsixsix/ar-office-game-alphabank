@@ -181,6 +181,7 @@ NOTE_A,ЛЯ,A
 NOTE_AS,ЛЯ#,A#
 NOTE_B,СИ,B
 ERROR_PRESENCE_REQUIRED,Сначала отсканируй код ВХОД на экране у ресепшна,Scan the IN code on the reception screen first
+ERROR_OFFICE_NETWORK_REQUIRED,Подключись к Wi-Fi офиса: задания засчитываются только в его сети,Connect to the office Wi-Fi: tasks count only on its network
 ERROR_PRESENCE_TOKEN_INVALID,QR-код устарел или недействителен,The QR code has expired or is invalid
 ERROR_PRESENCE_TOKEN_REUSED,Этот QR-код уже использован,This QR code has already been used
 ERROR_COLLEAGUE_INVALID,Неверный профиль коллеги,Invalid colleague profile

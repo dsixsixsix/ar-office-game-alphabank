@@ -20,7 +20,8 @@ import (
 // Presence in the office. The office screen shows two rotating codes signed with a secret that only
 // the server knows: the entry code opens the "in the office" interval, the exit code closes it.
 // Tasks, colleague meetings and room codes count only inside the interval; an interval left open
-// ends with the day. Static room codes at the doors work only after the entry code.
+// ends with the day. Static room codes at the doors work only after the entry code. Each of these
+// requests must also come from the office network (network.go).
 
 const (
 	presencePeriodSeconds = 30
@@ -139,6 +140,10 @@ func rpcOfficeCheckIn(ctx context.Context, logger runtime.Logger, db *sql.DB, nk
 		return "", err
 	}
 	return runPlayerTx(ctx, logger, db, nk, func(tx *gameTx) (any, error) {
+		if problem := tx.networkError(); problem != "" {
+			tx.logSuspicious("office_check_in", problem)
+			return fail(problem), nil
+		}
 		if problem := tx.useToken(purposeEntry, request.Token); problem != "" {
 			tx.logSuspicious("office_check_in", problem)
 			return fail(problem), nil
@@ -185,8 +190,8 @@ func rpcEnterRoom(ctx context.Context, logger runtime.Logger, db *sql.DB, nk run
 		return "", errInvalidPayload
 	}
 	return runPlayerTx(ctx, logger, db, nk, func(tx *gameTx) (any, error) {
-		if !inOffice(tx.me.state, tx.today) {
-			return fail("presence_required"), nil
+		if problem := tx.presenceError(); problem != "" {
+			return fail(problem), nil
 		}
 		tx.logActivity(tx.me, activityRoom, map[string]any{"room": request.RoomID})
 		return okResult, tx.writePresence(true, request.RoomID)

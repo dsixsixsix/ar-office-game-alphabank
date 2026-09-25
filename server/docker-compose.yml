@@ -37,6 +37,7 @@ services:
       ADMIN_PASSWORD: ${ADMIN_PASSWORD:?set ADMIN_PASSWORD in .env}
       PRESENCE_SECRET: ${PRESENCE_SECRET:?set PRESENCE_SECRET in .env}
       DEV_MODE: ${DEV_MODE:-false}
+      OFFICE_NETWORKS: ${OFFICE_NETWORKS:-}
     # Secrets come from the environment, never from local.yml.
     entrypoint:
       - /bin/sh
@@ -54,6 +55,7 @@ services:
         --runtime.env "ADMIN_PASSWORD=$$ADMIN_PASSWORD"
         --runtime.env "PRESENCE_SECRET=$$PRESENCE_SECRET"
         --runtime.env "DEV_MODE=$$DEV_MODE"
+        --runtime.env "OFFICE_NETWORKS=$$OFFICE_NETWORKS"
     ports:
       - "7350:7350"
       - "7351:7351"

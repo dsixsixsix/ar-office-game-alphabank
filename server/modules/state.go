@@ -386,11 +386,11 @@ func (tx *gameTx) claimOperation(key string) (bool, error) {
 }
 
 func (tx *gameTx) logSuspicious(task, reason string) {
-	value, _ := json.Marshal(map[string]any{"user_id": tx.me.userID, "t": tx.now, "task": task, "reason": reason})
+	value, _ := json.Marshal(map[string]any{"user_id": tx.me.userID, "t": tx.now, "task": task, "reason": reason, "ip": tx.clientIP()})
 	tx.writes = append(tx.writes, &runtime.StorageWrite{
 		Collection: suspiciousCollection, Key: randomKey(), UserID: systemUserID, Value: string(value),
 	})
-	tx.logger.Warn("suspicious: user %s task %s: %s", tx.me.userID, task, reason)
+	tx.logger.Warn("suspicious: user %s task %s from %s: %s", tx.me.userID, task, tx.clientIP(), reason)
 }
 
 func (tx *gameTx) writeSystem(collection, key string, value any, version string) error {

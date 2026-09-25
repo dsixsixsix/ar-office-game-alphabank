@@ -113,8 +113,8 @@ func rpcAssignColleague(ctx context.Context, logger runtime.Logger, db *sql.DB, 
 			return fail("unknown_task"), nil
 		}
 		state := tx.me.state
-		if !inOffice(state, tx.today) {
-			return fail("presence_required"), nil
+		if problem := tx.presenceError(); problem != "" {
+			return fail(problem), nil
 		}
 		presence, err := officePresence(tx.ctx, tx.nk, tx.today)
 		if err != nil {

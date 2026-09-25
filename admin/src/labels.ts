@@ -26,6 +26,7 @@ export const LEDGER_LABELS: Record<string, string> = {
 export const SUSPICIOUS_LABELS: Record<string, string> = {
   presence_token_invalid: "Недействительный QR-код офиса",
   presence_token_reused: "Повторное использование QR-кода",
+  office_network_required: "Запрос не из сети офиса",
   duplicate_operation: "Повтор операции",
   colleague_invalid: "Неизвестный коллега",
   colleague_not_assigned: "Коллега не назначен",
