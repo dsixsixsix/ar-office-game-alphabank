@@ -1,6 +1,7 @@
 import { api, type User } from "./api";
 import type { DashboardActions } from "./Dashboard";
 import { DepartmentSelect } from "./DepartmentSelect";
+import { formatDateTime } from "./format";
 import { generatePassword } from "./password";
 
 export function UsersTable({ actions, users }: { actions: DashboardActions; users: User[] }) {
@@ -33,6 +34,7 @@ export function UsersTable({ actions, users }: { actions: DashboardActions; user
                 <th>Имя</th>
                 <th>Логин</th>
                 <th>Департамент</th>
+                <th>Создан</th>
                 <th>Статус</th>
                 <th />
               </tr>
@@ -51,6 +53,7 @@ export function UsersTable({ actions, users }: { actions: DashboardActions; user
                       onChange={(id) => void run(() => api.updateUser(session, user.id, { department_id: id }))}
                     />
                   </td>
+                  <td className="nowrap">{formatDateTime(user.created_at)}</td>
                   <td>{user.banned ? "заблокирован" : "активен"}</td>
                   <td className="actions">
                     <button className="secondary" onClick={() => void resetPassword(user)}>

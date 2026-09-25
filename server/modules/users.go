@@ -23,14 +23,14 @@ type userView struct {
 	CreatedAt    int64  `json:"created_at"`
 }
 
-// rpcAdminListUsers: -> {"users": [userView]}, oldest first.
+// rpcAdminListUsers: -> {"users": [userView]}, newest first.
 func rpcAdminListUsers(ctx context.Context, logger runtime.Logger, db *sql.DB, nk runtime.NakamaModule, _ string) (string, error) {
 	if err := requireAdmin(ctx, nk); err != nil {
 		return "", err
 	}
 	rows, err := db.QueryContext(ctx, `
 		SELECT id, username, display_name, metadata, disable_time, create_time
-		FROM users WHERE id <> $1 ORDER BY create_time`, systemUserID)
+		FROM users WHERE id <> $1 ORDER BY create_time DESC`, systemUserID)
 	if err != nil {
 		logger.Error("list users: %v", err)
 		return "", errInternal
