@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { DashboardActions } from "./Dashboard";
+import { Dropdown } from "./Dropdown";
 
 const NEW_DEPARTMENT = "__new__";
 
@@ -8,12 +9,10 @@ export function DepartmentSelect({
   actions,
   value,
   onChange,
-  required = false,
 }: {
   actions: DashboardActions;
   value: string;
   onChange: (id: string) => void;
-  required?: boolean;
 }) {
   const [creating, setCreating] = useState(false);
   const [name, setName] = useState("");
@@ -42,20 +41,14 @@ export function DepartmentSelect({
   }
 
   return (
-    <select
+    <Dropdown
       value={value}
-      required={required}
-      onChange={(e) => (e.target.value === NEW_DEPARTMENT ? setCreating(true) : onChange(e.target.value))}
-    >
-      <option value="" disabled>
-        — выберите департамент —
-      </option>
-      {actions.departments.map((department) => (
-        <option key={department.id} value={department.id}>
-          {department.name}
-        </option>
-      ))}
-      <option value={NEW_DEPARTMENT}>+ Новый департамент…</option>
-    </select>
+      placeholder="Выберите департамент"
+      options={[
+        ...actions.departments.map((department) => ({ value: department.id, label: department.name })),
+        { value: NEW_DEPARTMENT, label: "+ Новый департамент…", action: true },
+      ]}
+      onChange={(id) => (id === NEW_DEPARTMENT ? setCreating(true) : onChange(id))}
+    />
   );
 }

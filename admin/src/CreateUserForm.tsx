@@ -60,7 +60,7 @@ export function CreateUserForm({ actions }: { actions: DashboardActions }) {
         </label>
         <label>
           Департамент
-          <DepartmentSelect actions={actions} value={departmentId} onChange={setDepartmentId} required />
+          <DepartmentSelect actions={actions} value={departmentId} onChange={setDepartmentId} />
         </label>
         <button type="submit" disabled={!departmentId}>
           Создать аккаунт

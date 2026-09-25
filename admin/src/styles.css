@@ -1,30 +1,24 @@
+/* Alfa-Bank palette: red on white, light interface only. */
 :root {
-  --bg: #f4f1ee;
+  --bg: #f3f4f5;
   --surface: #ffffff;
-  --text: #1d1a1f;
-  --muted: #6d6570;
-  --border: #ddd6d2;
+  --text: #0b1f35;
+  --muted: #6c7581;
+  --border: #dde0e4;
+  --hover: #f5f6f7;
   --accent: #ef3124;
+  --accent-hover: #d42a1f;
+  --accent-soft: #fdecea;
   --accent-text: #ffffff;
-  --neon: #d6197c;
-  --danger: #b3261e;
+  --danger: #ef3124;
   --error-bg: #fdecea;
+  --focus: 0 0 0 3px rgba(239, 49, 36, 0.18);
+  --shadow: 0 1px 2px rgba(11, 31, 53, 0.04), 0 4px 16px rgba(11, 31, 53, 0.06);
+  --shadow-menu: 0 8px 28px rgba(11, 31, 53, 0.16);
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   color: var(--text);
   background: var(--bg);
   color-scheme: light;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #141118;
-    --surface: #1e1a24;
-    --text: #efe9f2;
-    --muted: #a298a8;
-    --border: #3a3242;
-    --error-bg: #3b1a1d;
-    color-scheme: dark;
-  }
 }
 
 * {
@@ -43,19 +37,43 @@ body {
 }
 
 .topbar {
+  margin-bottom: 24px;
+  background: var(--surface);
+  border-bottom: 3px solid var(--accent);
+}
+
+.topbar-inner {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px 0;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 14px 16px;
 }
 
 .brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1.25rem;
   font-weight: 800;
-  letter-spacing: 0.08em;
+}
+
+.logo {
+  color: var(--accent);
+  flex: none;
 }
 
 .brand-accent {
-  color: var(--neon);
+  color: var(--accent);
+}
+
+.brand-sub {
+  padding-left: 10px;
+  border-left: 1px solid var(--border);
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--muted);
 }
 
 h1,
@@ -70,9 +88,10 @@ h2 {
 .card {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 20px;
+  border-radius: 16px;
+  padding: 24px;
   margin-bottom: 16px;
+  box-shadow: var(--shadow);
 }
 
 .login {
@@ -90,29 +109,55 @@ label {
 }
 
 input,
-select,
 button {
   font: inherit;
-  border-radius: 8px;
+  border-radius: 10px;
 }
 
 input,
-select {
+.dropdown-trigger {
   width: 100%;
   min-width: 0;
-  padding: 8px 10px;
+  height: 40px;
+  padding: 8px 12px;
   border: 1px solid var(--border);
-  background: var(--bg);
+  background: var(--surface);
   color: var(--text);
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+input:hover,
+.dropdown-trigger:hover {
+  border-color: #c3c8ce;
+}
+
+input:focus,
+.dropdown-trigger:focus-visible,
+.dropdown-trigger.open {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: var(--focus);
 }
 
 button {
-  padding: 8px 14px;
+  height: 40px;
+  padding: 8px 16px;
   border: none;
   background: var(--accent);
   color: var(--accent-text);
+  font-weight: 600;
   cursor: pointer;
   white-space: nowrap;
+  transition: background-color 0.15s, color 0.15s, border-color 0.15s;
+}
+
+button:hover:not(:disabled) {
+  background: var(--accent-hover);
+}
+
+button:focus-visible {
+  outline: none;
+  box-shadow: var(--focus);
 }
 
 button:disabled {
@@ -121,22 +166,133 @@ button:disabled {
 }
 
 button.secondary {
-  background: transparent;
+  background: var(--surface);
   color: var(--text);
   border: 1px solid var(--border);
 }
 
+button.secondary:hover:not(:disabled) {
+  background: var(--hover);
+  border-color: #c3c8ce;
+}
+
 button.danger {
-  background: transparent;
+  background: var(--surface);
   color: var(--danger);
   border: 1px solid var(--danger);
 }
 
-button.link {
+button.danger:hover:not(:disabled) {
+  background: var(--accent-soft);
+}
+
+button.link,
+button.link:hover:not(:disabled) {
+  height: auto;
   background: none;
   color: var(--muted);
   padding: 0;
+  font-weight: 500;
   text-decoration: underline;
+}
+
+button.link:hover:not(:disabled) {
+  color: var(--accent);
+}
+
+.dropdown-trigger {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 400;
+  text-align: left;
+  cursor: pointer;
+}
+
+.dropdown-trigger:hover:not(:disabled) {
+  background: var(--surface);
+}
+
+.dropdown-value {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dropdown-value.placeholder {
+  color: var(--muted);
+}
+
+.dropdown-chevron {
+  width: 16px;
+  height: 16px;
+  flex: none;
+  color: var(--muted);
+  transition: transform 0.15s, color 0.15s;
+}
+
+.dropdown-trigger.open .dropdown-chevron {
+  transform: rotate(180deg);
+  color: var(--accent);
+}
+
+.dropdown-menu {
+  position: fixed;
+  z-index: 100;
+  margin: 0;
+  padding: 6px;
+  list-style: none;
+  overflow-y: auto;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: var(--shadow-menu);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  color: var(--text);
+}
+
+.dropdown-option {
+  position: relative;
+  padding: 9px 12px 9px 30px;
+  border-radius: 8px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.dropdown-option.active {
+  background: var(--hover);
+}
+
+.dropdown-option.selected {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.dropdown-option.selected::before {
+  content: "";
+  position: absolute;
+  left: 11px;
+  top: 50%;
+  width: 8px;
+  height: 8px;
+  margin-top: -4px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+.dropdown-option.action {
+  margin-top: 4px;
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.dropdown-option.action::after {
+  content: "";
+  position: absolute;
+  left: 6px;
+  right: 6px;
+  top: -3px;
+  border-top: 1px solid var(--border);
 }
 
 .grid-form {
@@ -173,7 +329,7 @@ button.link {
 .issued {
   margin-top: 16px;
   padding: 12px 14px;
-  border-left: 3px solid var(--neon);
+  border-left: 3px solid var(--accent);
   background: var(--bg);
   border-radius: 0 8px 8px 0;
 }
@@ -207,8 +363,8 @@ th {
   font-weight: 600;
 }
 
-td select {
-  min-width: 180px;
+td .dropdown-trigger {
+  min-width: 200px;
 }
 
 td.actions {

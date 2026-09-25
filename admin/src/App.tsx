@@ -3,6 +3,7 @@ import type { Session } from "@heroiclabs/nakama-js";
 import { restoreSession, signOut } from "./api";
 import { LoginForm } from "./LoginForm";
 import { Dashboard } from "./Dashboard";
+import { AlfaLogo } from "./AlfaLogo";
 
 export function App() {
   const [session, setSession] = useState<Session | null>(() => restoreSession());
@@ -15,18 +16,24 @@ export function App() {
   }, [session]);
 
   return (
-    <div className="app">
+    <>
       <header className="topbar">
-        <span className="brand">
-          OFFICE<span className="brand-accent">GAME</span> · админка
-        </span>
-        {session && (
-          <button className="link" onClick={handleSignOut}>
-            Выйти
-          </button>
-        )}
+        <div className="topbar-inner">
+          <span className="brand">
+            <AlfaLogo />
+            <span>
+              Alfa<span className="brand-accent">Game</span>
+            </span>
+            <span className="brand-sub">админка</span>
+          </span>
+          {session && (
+            <button className="link" onClick={handleSignOut}>
+              Выйти
+            </button>
+          )}
+        </div>
       </header>
-      <main>{session ? <Dashboard session={session} onSessionLost={handleSignOut} /> : <LoginForm onSignedIn={setSession} />}</main>
-    </div>
+      <main className="app">{session ? <Dashboard session={session} onSessionLost={handleSignOut} /> : <LoginForm onSignedIn={setSession} />}</main>
+    </>
   );
 }
