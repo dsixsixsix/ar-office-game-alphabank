@@ -35,6 +35,8 @@ type TaskLogEntry struct {
 	ID     string `json:"id"`
 	Title  string `json:"title"`
 	Reward int    `json:"reward"`
+	// Unix time of the reward; 0 in entries written before it was recorded.
+	T int64 `json:"t,omitempty"`
 }
 
 type PhotoRequest struct {

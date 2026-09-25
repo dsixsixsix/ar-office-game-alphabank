@@ -76,8 +76,9 @@ func (tx *gameTx) grantTask(doc *playerDoc, task *Task, day, reward int) {
 	addToDay(state.Completed, day, task.ID)
 	removeFromDay(state.Pending, day, task.ID)
 	state.Earned[dayKey(day)] += reward
-	state.TaskLog[dayKey(day)] = append(state.TaskLog[dayKey(day)], TaskLogEntry{ID: task.ID, Title: task.Title, Reward: reward})
+	state.TaskLog[dayKey(day)] = append(state.TaskLog[dayKey(day)], TaskLogEntry{ID: task.ID, Title: task.Title, Reward: reward, T: tx.now})
 	state.CoinsEarned += int(tx.credit(doc, int64(reward), "task_reward", task.ID))
+	tx.logActivity(doc, activityTaskDone, map[string]any{"task": task.ID, "reward": reward})
 }
 
 func rpcListTasks(ctx context.Context, logger runtime.Logger, db *sql.DB, nk runtime.NakamaModule, _ string) (string, error) {
@@ -127,6 +128,7 @@ func rpcSkipTask(ctx context.Context, logger runtime.Logger, db *sql.DB, nk runt
 			return fail("pending_confirmation"), nil
 		}
 		addToDay(state.Skipped, tx.today, task.ID)
+		tx.logActivity(tx.me, activityTaskSkipped, map[string]any{"task": task.ID})
 		return okResult, nil
 	})
 }
@@ -248,9 +250,11 @@ func (tx *gameTx) rememberMet(task *Task, proof taskProof) {
 	switch task.Minigame {
 	case meetMinigame:
 		addToDay(tx.me.state.Met, tx.today, proof.ColleagueID)
+		tx.logActivity(tx.me, activityMet, map[string]any{"task": task.ID, "colleagues": []string{proof.ColleagueID}})
 	case bingoMinigame:
 		for _, id := range proof.ColleagueIDs {
 			addToDay(tx.me.state.Met, tx.today, id)
 		}
+		tx.logActivity(tx.me, activityMet, map[string]any{"task": task.ID, "colleagues": proof.ColleagueIDs})
 	}
 }

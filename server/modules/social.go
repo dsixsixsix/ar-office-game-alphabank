@@ -287,6 +287,7 @@ func (tx *gameTx) submitPhoto(task *Task, partnerID string, reward int) (string,
 	state := tx.me.state
 	addToDay(state.Met, tx.today, partnerID)
 	addToDay(state.Pending, tx.today, task.ID)
+	tx.logActivity(tx.me, activityTaskPending, map[string]any{"task": task.ID, "partner": partnerID})
 	requestID := randomKey()
 	inboxID, err := tx.notify(partner, "photo_request", map[string]any{
 		"from_id": tx.me.userID, "name": tx.me.displayName(), "request_id": requestID, "day": tx.today,
@@ -343,6 +344,7 @@ func rpcRespondPhotoRequest(ctx context.Context, logger runtime.Logger, db *sql.
 		} else {
 			item.State = "declined"
 		}
+		tx.logActivity(tx.me, activityPhotoAnswer, map[string]any{"from": fromID, "confirm": request.Confirm})
 		if err := tx.resolvePhotoRequest(fromID, requestID, request.Confirm); err != nil {
 			return nil, err
 		}

@@ -126,6 +126,7 @@ func rpcLogin(ctx context.Context, logger runtime.Logger, db *sql.DB, nk runtime
 			tx.credit(tx.me, int64(welcome), "welcome_bonus", "welcome")
 		}
 		state.LastLoginDay = tx.today
+		tx.logActivity(tx.me, activityLogin, nil)
 		if err := tx.tick(); err != nil {
 			return nil, err
 		}

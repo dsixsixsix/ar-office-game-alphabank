@@ -39,6 +39,111 @@ export interface NewUser {
   department_id: string;
 }
 
+export interface PlayerSummary {
+  id: string;
+  username: string;
+  display_name: string;
+  department_id: string;
+  banned: boolean;
+  created_at: number;
+  balance: number;
+  streak: number;
+  best_streak: number;
+  office_days: number;
+  excused_days: number;
+  tasks_total: number;
+  skipped_total: number;
+  coins_earned: number;
+  colleagues: number;
+  /** Day numbers: days since 1970-01-01 in the office time zone; 0 = never played. */
+  first_day: number;
+  last_login_day: number;
+  present_today: boolean;
+  in_office: boolean;
+  today: number;
+  /** Unix seconds, 0 = no recorded actions. */
+  last_activity: number;
+  car: string;
+  status: string;
+}
+
+export interface NamedId {
+  id: string;
+  name: string;
+}
+
+export interface TaskLogEntry {
+  id: string;
+  title: string;
+  reward: number;
+  /** Unix seconds; absent in records made before the time was stored. */
+  t?: number;
+}
+
+export interface StatsDay {
+  day: number;
+  workday: boolean;
+  present: boolean;
+  excused: boolean;
+  checkin_at: number;
+  checkout_at: number;
+  tasks: TaskLogEntry[];
+  skipped: NamedId[];
+  pending: NamedId[];
+  met: string[];
+  purchases: string[];
+  earned: number;
+}
+
+export interface ActivityEvent {
+  t: number;
+  kind: string;
+  params?: Record<string, unknown>;
+}
+
+export interface LedgerEntry {
+  t: number;
+  change: number;
+  reason: string;
+  ref: string;
+}
+
+export interface FlaggedEntry {
+  t: number;
+  task: string;
+  reason: string;
+}
+
+export interface RewardRequest {
+  t: number;
+  item_id: string;
+  price: number;
+  status: string;
+}
+
+export interface PhotoRequest {
+  id: string;
+  day: number;
+  task: string;
+  partner: string;
+  t: number;
+  state: string;
+  reward: number;
+}
+
+export interface PlayerStats {
+  player: PlayerSummary;
+  days: StatsDay[];
+  activity: ActivityEvent[];
+  ledger: LedgerEntry[];
+  suspicious: FlaggedEntry[];
+  reward_requests: RewardRequest[];
+  photo_requests: PhotoRequest[];
+  excused_days: number[];
+  /** Display names of the task, item, car and user ids above. */
+  names: Record<string, string>;
+}
+
 /** Error with a stable key from the server (see server/modules/errors.go) or a transport key. */
 export class ApiError extends Error {
   constructor(readonly key: string) {
@@ -119,4 +224,6 @@ export const api = {
     call(s, "admin_update_user", { user_id, ...changes }),
   setPassword: (s: Session, user_id: string, password: string) => call(s, "admin_set_password", { user_id, password }),
   setBanned: (s: Session, user_id: string, banned: boolean) => call(s, "admin_set_banned", { user_id, banned }),
+  statsOverview: (s: Session) => call<{ players: PlayerSummary[] }>(s, "admin_stats_overview").then((r) => r.players),
+  playerStats: (s: Session, user_id: string) => call<PlayerStats>(s, "admin_player_stats", { user_id }),
 };

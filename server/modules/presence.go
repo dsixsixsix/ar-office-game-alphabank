@@ -110,6 +110,7 @@ func (tx *gameTx) enterOffice() error {
 	state.CheckinAt[key] = tx.now
 	delete(state.CheckoutAt, key)
 	state.BestStreak = max(state.BestStreak, streak(state.PresenceDays, state.ExcusedDays, tx.today, state.FirstDay))
+	tx.logActivity(tx.me, activityCheckIn, nil)
 	return tx.writePresence(true, "")
 }
 
@@ -166,6 +167,7 @@ func rpcOfficeCheckOut(ctx context.Context, logger runtime.Logger, db *sql.DB, n
 			return fail("not_in_office"), nil
 		}
 		tx.me.state.CheckoutAt[dayKey(tx.today)] = tx.now
+		tx.logActivity(tx.me, activityCheckOut, nil)
 		return okResult, tx.writePresence(false, "")
 	})
 }
@@ -186,6 +188,7 @@ func rpcEnterRoom(ctx context.Context, logger runtime.Logger, db *sql.DB, nk run
 		if !inOffice(tx.me.state, tx.today) {
 			return fail("presence_required"), nil
 		}
+		tx.logActivity(tx.me, activityRoom, map[string]any{"room": request.RoomID})
 		return okResult, tx.writePresence(true, request.RoomID)
 	})
 }

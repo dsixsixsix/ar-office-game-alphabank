@@ -54,6 +54,8 @@ func InitModule(ctx context.Context, logger runtime.Logger, db *sql.DB, nk runti
 		"admin_update_user":       rpcAdminUpdateUser,
 		"admin_set_password":      rpcAdminSetPassword,
 		"admin_set_banned":        rpcAdminSetBanned,
+		"admin_stats_overview":    rpcAdminStatsOverview,
+		"admin_player_stats":      rpcAdminPlayerStats,
 		// Game.
 		"login":                 rpcLogin,
 		"get_my_profile":        rpcGetMyProfile,

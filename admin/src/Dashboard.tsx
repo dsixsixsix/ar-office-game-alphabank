@@ -5,6 +5,9 @@ import { errorText, isSessionError } from "./messages";
 import { CreateUserForm } from "./CreateUserForm";
 import { UsersTable } from "./UsersTable";
 import { DepartmentsPanel } from "./DepartmentsPanel";
+import { StatsPanel } from "./StatsPanel";
+
+type Section = "access" | "stats";
 
 export interface DashboardActions {
   session: Session;
@@ -12,12 +15,15 @@ export interface DashboardActions {
   /** Runs a server call, reloads the lists afterwards and reports errors. Resolves to false on error. */
   run: (action: () => Promise<unknown>) => Promise<boolean>;
   createDepartment: (name: string) => Promise<Department | null>;
+  /** Shows an error of a call made outside `run`, or signs out when the session is gone. */
+  report: (error: unknown) => void;
 }
 
 export function Dashboard({ session, onSessionLost }: { session: Session; onSessionLost: () => void }) {
   const [departments, setDepartments] = useState<Department[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [error, setError] = useState("");
+  const [section, setSection] = useState<Section>("access");
 
   const fail = useCallback(
     (e: unknown) => {
@@ -70,7 +76,7 @@ export function Dashboard({ session, onSessionLost }: { session: Session; onSess
     [run, session],
   );
 
-  const actions: DashboardActions = { session, departments, run, createDepartment };
+  const actions: DashboardActions = { session, departments, run, createDepartment, report: fail };
   const players = users.filter((user) => user.role === "player");
 
   return (
@@ -80,9 +86,23 @@ export function Dashboard({ session, onSessionLost }: { session: Session; onSess
           {error}
         </p>
       )}
-      <CreateUserForm actions={actions} />
-      <UsersTable actions={actions} users={players} />
-      <DepartmentsPanel actions={actions} players={players} />
+      <nav className="sections" role="tablist">
+        <button role="tab" aria-selected={section === "access"} className={section === "access" ? "tab active" : "tab"} onClick={() => setSection("access")}>
+          Доступ
+        </button>
+        <button role="tab" aria-selected={section === "stats"} className={section === "stats" ? "tab active" : "tab"} onClick={() => setSection("stats")}>
+          Статистика
+        </button>
+      </nav>
+      {section === "access" ? (
+        <>
+          <CreateUserForm actions={actions} />
+          <UsersTable actions={actions} users={players} />
+          <DepartmentsPanel actions={actions} players={players} />
+        </>
+      ) : (
+        <StatsPanel actions={actions} />
+      )}
     </div>
   );
 }
