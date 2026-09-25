@@ -63,6 +63,27 @@ func TestExcusedDaysDoNotBreakTheStreak(t *testing.T) {
 	expectInt(t, "missed", int64(missedInRow(presence, days(1), monday+1, monday-30)), 0)
 }
 
+func TestUnbanExcusesTheBanWorkdays(t *testing.T) {
+	// Banned on Wednesday after the check-in, unbanned the next Tuesday.
+	state := &PlayerState{FirstDay: monday - 30, PresenceDays: days(0, 1, 2), ExcusedDays: map[string]bool{}}
+	excuseDays(state, monday+2, monday+8)
+	want := days(3, 4, 7)
+	if len(state.ExcusedDays) != len(want) {
+		t.Fatalf("excused = %v, want %v", state.ExcusedDays, want)
+	}
+	for key := range want {
+		if !state.ExcusedDays[key] {
+			t.Errorf("day %s not excused", key)
+		}
+	}
+	expectInt(t, "streak", int64(streak(state.PresenceDays, state.ExcusedDays, monday+8, state.FirstDay)), 3)
+	expectInt(t, "missed", int64(missedInRow(state.PresenceDays, state.ExcusedDays, monday+7, state.FirstDay)), 0)
+
+	fresh := &PlayerState{PresenceDays: map[string]bool{}, ExcusedDays: map[string]bool{}}
+	excuseDays(fresh, monday, monday+5)
+	expectInt(t, "excused before the first login", int64(len(fresh.ExcusedDays)), 0)
+}
+
 func TestMissedDaysInARow(t *testing.T) {
 	presence := days(0)
 	expectInt(t, "Thursday", int64(missedInRow(presence, nil, monday+3, monday-30)), 3)

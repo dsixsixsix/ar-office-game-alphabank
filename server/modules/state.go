@@ -85,6 +85,8 @@ type PlayerState struct {
 	MorningReport      MorningReport                `json:"morning_report"`
 	CoinsEarned        int                          `json:"coins_earned"`
 	WelcomeGiven       bool                         `json:"welcome_given"`
+	// Unix time the admin banned the player; 0 when not banned (users.go: rpcAdminSetBanned).
+	BannedAt int64 `json:"banned_at,omitempty"`
 }
 
 func (s *PlayerState) normalize() {
@@ -213,19 +215,32 @@ type gameTx struct {
 }
 
 // runPlayerTx runs `fn` for the calling player and commits its changes, retrying on version conflicts.
+// A banned player is refused on every attempt: the ban writes the state first, so an RPC already
+// running when the ban lands loses its version check, retries and stops here.
 func runPlayerTx(ctx context.Context, logger runtime.Logger, db *sql.DB, nk runtime.NakamaModule, fn func(tx *gameTx) (any, error)) (string, error) {
 	userID, err := callerID(ctx)
 	if err != nil {
 		return "", err
 	}
+	return runUserTx(ctx, logger, db, nk, userID, func(tx *gameTx) (any, error) {
+		if tx.me.metadata.Role != rolePlayer {
+			return nil, errNotPlayer
+		}
+		if tx.me.banned() {
+			return nil, errUnauthenticated
+		}
+		return fn(tx)
+	})
+}
+
+// runUserTx runs `fn` with `userID` as tx.me; admin RPCs use it to change a player's state safely.
+func runUserTx(ctx context.Context, logger runtime.Logger, db *sql.DB, nk runtime.NakamaModule, userID string, fn func(tx *gameTx) (any, error)) (string, error) {
 	for attempt := 1; ; attempt++ {
 		tx := &gameTx{ctx: ctx, logger: logger, db: db, nk: nk, others: map[string]*playerDoc{}, content: gameContent}
+		var err error
 		tx.me, err = tx.loadPlayer(userID)
 		if err != nil {
 			return "", err
-		}
-		if tx.me.metadata.Role != rolePlayer {
-			return "", errNotPlayer
 		}
 		tx.offset = gameContent.officeOffset()
 		tx.now = time.Now().Unix()
@@ -246,6 +261,19 @@ func runPlayerTx(ctx context.Context, logger runtime.Logger, db *sql.DB, nk runt
 			return "", errInternal
 		}
 	}
+}
+
+// banned: the ban is in the game state or on the account (bans made before the state recorded it).
+func (d *playerDoc) banned() bool {
+	return d.state.BannedAt != 0 || d.account.GetDisableTime().GetSeconds() > 0
+}
+
+// banStart: unix time the current ban began, 0 when the player is not banned.
+func (d *playerDoc) banStart() int64 {
+	if d.state.BannedAt != 0 {
+		return d.state.BannedAt
+	}
+	return d.account.GetDisableTime().GetSeconds()
 }
 
 func (tx *gameTx) loadPlayer(userID string) (*playerDoc, error) {

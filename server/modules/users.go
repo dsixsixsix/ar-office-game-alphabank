@@ -191,7 +191,10 @@ func rpcAdminSetPassword(ctx context.Context, logger runtime.Logger, db *sql.DB,
 }
 
 // rpcAdminSetBanned: {"user_id", "banned"} -> {}. A ban also ends the user's sessions.
-func rpcAdminSetBanned(ctx context.Context, logger runtime.Logger, _ *sql.DB, nk runtime.NakamaModule, payload string) (string, error) {
+// The ban is first written to the game state, so a game RPC already running for the player fails
+// its version check and is refused on retry. An unban keeps all progress and excuses the workdays
+// of the ban, so the player is not fined and keeps the streak; the player signs in again.
+func rpcAdminSetBanned(ctx context.Context, logger runtime.Logger, db *sql.DB, nk runtime.NakamaModule, payload string) (string, error) {
 	if err := requireAdmin(ctx, nk); err != nil {
 		return "", err
 	}
@@ -205,17 +208,57 @@ func rpcAdminSetBanned(ctx context.Context, logger runtime.Logger, _ *sql.DB, nk
 	if _, err := playerMetadata(ctx, nk, request.UserID); err != nil {
 		return "", err
 	}
-	var err error
 	if request.Banned {
-		err = nk.UsersBanId(ctx, []string{request.UserID})
-	} else {
-		err = nk.UsersUnbanId(ctx, []string{request.UserID})
+		return banPlayer(ctx, logger, db, nk, request.UserID)
 	}
-	if err != nil {
-		logger.Error("set banned=%t for %s: %v", request.Banned, request.UserID, err)
+	return unbanPlayer(ctx, logger, db, nk, request.UserID)
+}
+
+func banPlayer(ctx context.Context, logger runtime.Logger, db *sql.DB, nk runtime.NakamaModule, userID string) (string, error) {
+	if _, err := setBannedAt(ctx, logger, db, nk, userID, true); err != nil {
+		return "", err
+	}
+	if err := nk.UsersBanId(ctx, []string{userID}); err != nil {
+		logger.Error("ban %s: %v", userID, err)
+		// The game must not stay blocked while the account looks active in the panel.
+		if _, undoErr := setBannedAt(ctx, logger, db, nk, userID, false); undoErr != nil {
+			logger.Error("undo game ban of %s: %v", userID, undoErr)
+		}
 		return "", errInternal
 	}
 	return "{}", nil
+}
+
+// unbanPlayer clears the game ban before the account ban: until the account is unbanned the player
+// cannot sign in, and the account's disable_time still gives the ban start if this call is retried.
+func unbanPlayer(ctx context.Context, logger runtime.Logger, db *sql.DB, nk runtime.NakamaModule, userID string) (string, error) {
+	if _, err := setBannedAt(ctx, logger, db, nk, userID, false); err != nil {
+		return "", err
+	}
+	if err := nk.UsersUnbanId(ctx, []string{userID}); err != nil {
+		logger.Error("unban %s: %v", userID, err)
+		return "", errInternal
+	}
+	return "{}", nil
+}
+
+// setBannedAt records the ban in the player's game state or, on unban, clears it and excuses the
+// workdays from the ban day up to yesterday.
+func setBannedAt(ctx context.Context, logger runtime.Logger, db *sql.DB, nk runtime.NakamaModule, userID string, banned bool) (string, error) {
+	return runUserTx(ctx, logger, db, nk, userID, func(tx *gameTx) (any, error) {
+		state := tx.me.state
+		if banned {
+			if state.BannedAt == 0 {
+				state.BannedAt = tx.now
+			}
+			return nil, nil
+		}
+		if start := tx.me.banStart(); start > 0 {
+			excuseDays(state, dayOf(start, tx.offset), tx.today)
+		}
+		state.BannedAt = 0
+		return nil, nil
+	})
 }
 
 // playerMetadata loads a player account for an admin action. Admin accounts are managed only

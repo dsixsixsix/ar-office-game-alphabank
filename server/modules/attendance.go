@@ -38,6 +38,20 @@ func missedInRow(presence, excused map[string]bool, day, firstDay int) int {
 	return count
 }
 
+// excuseDays marks workdays in [from, to) as excused, skipping office days and days before the
+// player's first day. An unban uses it so the ban costs neither coins nor the streak.
+func excuseDays(state *PlayerState, from, to int) {
+	if state.FirstDay == 0 {
+		return
+	}
+	for day := max(from, state.FirstDay); day < to; day++ {
+		key := dayKey(day)
+		if isWorkday(day) && !state.PresenceDays[key] {
+			state.ExcusedDays[key] = true
+		}
+	}
+}
+
 // finePercent: rate for the n-th workday missed in a row; the last matching tier wins.
 func finePercent(missed int, tiers []FineTier) int {
 	percent, bestDays := 0, 0
